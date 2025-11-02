@@ -17,15 +17,13 @@ def local_css(file_name):
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
-# --- ПОЛНАЯ БАЗА ЗНАНИЙ ---
+# БАЗА ЗНАНИЙ
 @st.cache_data
 def create_knowledge_base():
     try:
-        # Указываем правильный путь к вашему файлу
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
         knowledge_base = ""
 
-        # Компактный формат для всех произведений
         for _, work in works_df.iterrows():
             knowledge_base += f"Название:{work['Name']},"
             knowledge_base += f"бюджет и сборы:{work.get('Бюджет и сборы', 'не указано')},"
@@ -50,12 +48,11 @@ def create_knowledge_base():
 
 
 # --- ИНТЕРФЕЙС ПРИЛОЖЕНИЯ ---
-local_css(".streamlit/style.css")
+local_css("style.css")
 
 st.title("✨ Умный ассистент Disney ✨")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
-# Новые примеры вопросов на основе вашей CSV
 example_questions = [
     "Выберите вопрос из списка...",
     "Какой бюджет у фильма 'Железный человек'?",
@@ -201,4 +198,5 @@ else:
         st.markdown(
             '<div class="big-error-message">❌ Не удалось загрузить базу знаний.</div>',
             unsafe_allow_html=True
+
         )
