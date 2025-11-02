@@ -50,7 +50,7 @@ def create_knowledge_base():
 # --- ИНТЕРФЕЙС ПРИЛОЖЕНИЯ ---
 local_css("style.css")
 
-st.title("✨Умный ассистент✨")
+st.title("Умный ассистент")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
 example_questions = [
@@ -200,4 +200,5 @@ else:
             unsafe_allow_html=True
 
         )
+
 
