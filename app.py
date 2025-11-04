@@ -3,23 +3,29 @@ import pandas as pd
 from openai import OpenAI
 import os
 
+# --- Настройки страницы ---
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
+# --- Функция для загрузки CSS стилей ---
 def local_css(file_name):
+    """Загружает внешний CSS-файл для стилизации приложения."""
     try:
         with open(file_name, "r", encoding="utf-8") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     except FileNotFoundError:
         st.error(f"Критическая ошибка: не найден файл стилей '{file_name}'!")
 
-# Вызываем нашу функцию
+# Применяем стили из файла style.css
 local_css("style.css")
 
 
+# --- Получение API ключа из секретов Streamlit ---
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+# --- Функция для загрузки и форматирования базы знаний ---
 @st.cache_data
 def create_knowledge_base():
+    """Читает CSV-файл и преобразует его в единый текстовый блок для AI-модели."""
     try:
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
         knowledge_base = ""
@@ -42,10 +48,12 @@ def create_knowledge_base():
         st.error(f"Ошибка при загрузке данных: {e}")
         return None
 
-# --- Интерфейс ---
-st.title("Умный ассистент")
+# === Начало интерфейса приложения ===
+
+st.title("✨ Пиксель")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
+# Список примеров вопросов для выпадающего списка
 example_questions = [
     "Выберите вопрос из списка...", "Какой бюджет у фильма 'Железный человек'?", "Какие сборы у мультфильма 'Холодное сердце'?",
     "Какой фильм самый кассовый?", "Сравни бюджеты 'Истории игрушек' и 'Истории игрушек 4'.", "В каком году вышел мультфильм 'Белоснежка и семь гномов'?",
@@ -61,33 +69,51 @@ example_questions = [
 
 st.markdown("---")
 
-selected_query = st.selectbox(" ", example_questions, key="selectbox_query", label_visibility="collapsed")
-custom_query = st.text_input(" ", placeholder="Или напишите свой вопрос здесь...", label_visibility="collapsed", key="text_input")
+# Создаем единое поле ввода, где можно и выбирать, и писать
+user_query = st.selectbox(
+    label=" ",  # Пустая метка, чтобы ее скрыть
+    options=example_questions,
+    index=0, # По умолчанию будет выбран первый элемент: "Выберите вопрос из списка..."
+    key="user_input_box",
+    label_visibility="collapsed"
+)
+
+# Проверяем, если пользователь начал печатать что-то свое, а не выбрал из списка
+# st.session_state хранит текущее значение поля ввода
+if 'user_input_box' in st.session_state and st.session_state.user_input_box not in example_questions:
+    final_query = st.session_state.user_input_box
+# Если пользователь выбрал пункт из списка (и это не заголовок)
+elif user_query != "Выберите вопрос из списка...":
+    final_query = user_query
+# Если ничего не выбрано и не написано
+else:
+    final_query = ""
 
 st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
 
 ask_button = st.button("**НАЙТИ ОТВЕТ**", use_container_width=True, key="find_answer")
 
-if custom_query.strip(): user_query = custom_query
-elif selected_query and selected_query != "Выберите вопрос из списка...": user_query = selected_query
-else: user_query = ""
-
+# Загружаем базу знаний
 knowledge_base_text = create_knowledge_base()
+# Создаем пустой контейнер, куда позже выведем ответ
 answer_placeholder = st.empty()
 
+# Проверяем, что все готово к работе: есть база знаний и API ключ
 if knowledge_base_text and GROQ_API_KEY:
-    # ... (вся остальная логика остается без изменений) ...
     try:
+        # Инициализируем клиент для обращения к AI-модели
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
         model_name = "meta-llama/llama-4-scout-17b-16e-instruct"
     except Exception as e:
         st.error(f"Ошибка инициализации клиента: {e}")
         client = None
 
-    if client and user_query and ask_button:
+    # Основная логика: выполняется, если есть клиент, есть запрос и нажата кнопка
+    if client and final_query and ask_button:
         with st.spinner(""):
             st.markdown("<div class='spinner-text'>✨ Ищу ответ в волшебных архивах Дисней...</div>", unsafe_allow_html=True)
             try:
+                # Формируем промпт (инструкцию) для AI-модели
                 prompt = f"""Твоя роль - быть сверх-точным ассистентом-базой данных по фильмам Disney.
 
 СТРОГИЕ ИНСТРУКЦИИ:
@@ -104,7 +130,6 @@ if knowledge_base_text and GROQ_API_KEY:
 -----
 Название: Король лев
 Бюджет и сборы: $45 млн / $968 млн
-...
 Из этой записи видно, что бюджет составляет $45 млн.
 [ОТВЕТ]
 Бюджет мультфильма "Король лев" составляет $45 млн.
@@ -116,12 +141,10 @@ if knowledge_base_text and GROQ_API_KEY:
 Название: Король Лев: Новая глава
 Год выпуска: 2019
 Тип: Фильм
-...
 -----
 Название: Аладдин: Новое желание
 Год выпуска: 2019
 Тип: Фильм
-...
 Я нашел два фильма, соответствующих критериям.
 [ОТВЕТ]
 Фильмы, выпущенные в 2019 году:
@@ -131,10 +154,11 @@ if knowledge_base_text and GROQ_API_KEY:
 ДАННЫЕ:
 {knowledge_base_text}
 
-ВОПРОС: {user_query}
+ВОПРОС: {final_query}
 
 ОТВЕТ В СТРОГОМ ФОРМАТЕ:"""
 
+                # Отправляем запрос к AI-модели
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[{"role": "user", "content": prompt}],
@@ -143,6 +167,7 @@ if knowledge_base_text and GROQ_API_KEY:
                 )
                 answer = response.choices[0].message.content
 
+                # Обрабатываем и форматируем ответ для красивого вывода
                 try:
                     reasoning_part, final_answer_part = answer.split("[ОТВЕТ]")
                     reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
@@ -152,19 +177,17 @@ if knowledge_base_text and GROQ_API_KEY:
                     final_answer_html = final_answer_text.replace('\n', '<br>')
 
                     full_response_html = f"{reasoning_html}<br><br><hr><br><strong>{final_answer_html}</strong>"
-
                 except ValueError:
                     full_response_html = answer.replace("[РАССУЖДЕНИЯ]", "").replace("[ОТВЕТ]", "").replace('\n', '<br>').strip()
 
+                # Выводим результат на страницу
                 answer_placeholder.markdown(f'<div class="big-success-message">🎉 ГОТОВО! Вот что мне удалось найти:</div>', unsafe_allow_html=True)
-                st.markdown(f'<div class="user-question">Ваш вопрос: {user_query}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="user-question">Ваш вопрос: {final_query}</div>', unsafe_allow_html=True)
                 st.markdown("---")
-
                 st.markdown(f'<div class="big-answer-text">{full_response_html}</div>', unsafe_allow_html=True)
 
             except Exception as e:
                 answer_placeholder.markdown(f'<div class="big-error-message">❌ Произошла ошибка: {e}</div>', unsafe_allow_html=True)
-    elif not user_query and ask_button:
-        answer_placeholder.markdown('<div class="big-warning-message">⚠️ ПОЖАЛУЙСТА, ВЫБЕРИТЕ ВОПРОС ИЛИ НАПИШИТЕ СВОЙ!</div>', unsafe_allow_html=True)
-
-
+    # Если пользователь нажал кнопку, но не ввел/выбрал вопрос
+    elif not final_query and ask_button:
+        answer_placeholder.markdown('<div class="big-warning-message">⚠️ Пожалуйста, введите или выберите вопрос!</div>', unsafe_allow_html=True)
