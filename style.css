@@ -20,33 +20,33 @@ h3 { font-size: 2.5rem !important; font-weight: 400; }
 
 /* Контейнер поля ввода */
 [data-testid="stTextInput"] {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border-radius: 50px !important; /* Делаем его полностью овальным */
-    border: 3px solid rgba(255, 255, 255, 0.6) !important;
-    padding: 0 !important; /* Убираем лишние отступы */
+    background: #FFFFFF !important; /* Делаем фон контейнера полностью белым */
+    border-radius: 50px !important; /* Делаем его овальным */
+    border: none !important; /* Убираем лишнюю рамку */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Добавляем легкую тень для объема */
 }
 
 /* Само поле ввода внутри контейнера */
 [data-testid="stTextInput"] input {
-    background: transparent !important;
-    color: white !important;
+    background: transparent !important; /* Фон самого поля прозрачный, чтобы был виден фон контейнера */
+    color: #111111 !important; /* Делаем текст черным */
     font-size: 2rem !important;
     padding: 25px 30px !important;
+    min-height: 80px !important;
     border: none !important;
-    outline: none !important; /* Убираем обводку при фокусе */
-    box-shadow: none !important; /* Убираем тени */
-    width: 100%;
+    outline: none !important;
 }
 
 input:-webkit-autofill,
 input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
-    -webkit-box-shadow: 0 0 0 40px #6d75b3 inset !important; /* Заливаем фон цветом, похожим на фон страницы */
-    -webkit-text-fill-color: white !important; /* Делаем цвет текста белым */
-    transition: background-color 5000s ease-in-out 0s; /* Хак для предотвращения смены фона */
-    border-radius: 50px !important; /* Сохраняем скругление */
+    -webkit-box-shadow: 0 0 0 40px #FFFFFF inset !important; /* Заливаем фон белым цветом */
+    -webkit-text-fill-color: #111111 !important; /* Делаем цвет текста черным */
+    transition: background-color 5000s ease-in-out 0s;
+    border-radius: 50px !important;
 }
+
 
 /* Стили для кнопки "Найти ответ" */
 .stButton button {
