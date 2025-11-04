@@ -1,1 +1,76 @@
+/* style.css */
+
+/* Подключаем кастомные шрифты */
+@import url('https://fonts.googleapis.com/css2?family=Waltograph&family=Nunito:wght@400;700&display=swap');
+
+/* Фирменный фиолетовый фон */
+.stApp, [data-testid="stHeader"] {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Стили для заголовков */
+h1, h3 {
+    color: #FFFFFF !important;
+    text-align: center;
+}
+
+h1 {
+    font-family: 'Waltograph', cursive !important;
+    font-size: 8rem !important;
+}
+
+h3 {
+    font-family: 'Nunito', sans-serif !important;
+    font-size: 2.5rem !important;
+    font-weight: 600;
+}
+
+/* Общий контейнер для полей ввода */
+[data-testid="stSelectbox"], [data-testid="stTextInput"] {
+    background-color: transparent !important; /* Убираем любой фоновый цвет у контейнера */
+}
+
+/* Стилизация самих полей */
+[data-testid="stSelectbox"] > div > div, [data-testid="stTextInput"] input {
+    border-radius: 25px !important;
+    border: 3px solid rgba(255, 255, 255, 0.6) !important;
+    padding: 25px 30px !important;
+    font-size: 2rem !important;
+    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон */
+    color: white !important; /* Белый цвет текста */
+    min-height: 80px !important;
+}
+
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+    background-color: transparent !important;
+}
+
+/* Стили для кнопки */
+.stButton button {
+    border-radius: 30px !important;
+    padding: 25px 40px !important;
+    font-size: 3rem !important;
+    font-weight: 700;
+    background: linear-gradient(45deg, #FF6B6B, #FF8E53) !important;
+    color: white !important;
+    border: none !important;
+}
+
+/* Блок с ответом */
+.big-answer-text {
+    font-size: 1.5rem !important;
+    line-height: 1.6;
+    background: #FFFFFF;
+    color: #111111 !important;
+    padding: 2.5rem;
+    border-radius: 20px;
+}
+
+/* Сообщения "Готово", вопрос пользователя, спиннер */
+.big-success-message, .user-question, .spinner-text {
+    font-size: 2.5rem !important;
+    text-align: center;
+    font-weight: 600;
+    color: #FFFFFF !important;
+}
 
