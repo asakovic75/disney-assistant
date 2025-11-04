@@ -1,9 +1,6 @@
-/* style.css */
-
-/* Подключаем кастомные шрифты */
 @import url('https://fonts.googleapis.com/css2?family=Waltograph&family=Nunito:wght@400;700&display=swap');
 
-/* Фирменный фиолетовый фон */
+/* Фирменный фон */
 .stApp, [data-testid="stHeader"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
@@ -27,22 +24,33 @@ h3 {
 
 /* Общий контейнер для полей ввода */
 [data-testid="stSelectbox"], [data-testid="stTextInput"] {
-    background-color: transparent !important; /* Убираем любой фоновый цвет у контейнера */
+    background-color: transparent !important;
 }
 
 /* Стилизация самих полей */
-[data-testid="stSelectbox"] > div > div, [data-testid="stTextInput"] input {
+[data-testid="stSelectbox"] > div > div, 
+[data-testid="stTextInput"] input {
     border-radius: 25px !important;
     border: 3px solid rgba(255, 255, 255, 0.6) !important;
     padding: 25px 30px !important;
     font-size: 2rem !important;
-    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон */
-    color: white !important; /* Белый цвет текста */
+    background: rgba(255, 255, 255, 0.15) !important;
+    color: white !important;
     min-height: 80px !important;
 }
 
-[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
+[data-testid="stSelectbox"] div[data-baseweb="select"] > div > div {
+    color: white !important;
     background-color: transparent !important;
+}
+div[data-baseweb="popover"] ul {
+    background-color: #764ba2 !important; /* Фиолетовый фон для списка */
+    border: 2px solid white !important;
+    border-radius: 15px !important;
+}
+/* Стилизуем пункты в выпадающем списке */
+div[data-baseweb="popover"] ul li {
+    color: white !important;
 }
 
 /* Стили для кнопки */
@@ -66,11 +74,10 @@ h3 {
     border-radius: 20px;
 }
 
-/* Сообщения "Готово", вопрос пользователя, спиннер */
+/* Общие стили */
 .big-success-message, .user-question, .spinner-text {
     font-size: 2.5rem !important;
     text-align: center;
     font-weight: 600;
     color: #FFFFFF !important;
 }
-
