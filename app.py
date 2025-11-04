@@ -35,6 +35,8 @@ def create_knowledge_base():
             knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы', 'не указано')}\n"
             knowledge_base += f"Возраст: {work.get('Возраст', 'не указано')}\n"
             knowledge_base += f"Год выпуска: {work.get('Год выпуска', 'не указано')}\n"
+            knowledge_base += f"Диснейленд: {work.get('Диснейленд', 'не указано')}\n" 
+            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
             knowledge_base += f"Исполнители: {work.get('Исполнители', 'не указано')}\n"
             knowledge_base += f"Награды: {work.get('Награды', 'не указано')}\n"
             knowledge_base += f"Персонажи: {work.get('Персонажи', 'не указано')}\n"
@@ -164,3 +166,4 @@ if knowledge_base_text and GROQ_API_KEY:
     # Если пользователь нажал кнопку, но не ввел вопрос
     elif not user_query and ask_button:
         answer_placeholder.markdown('<div class="big-warning-message">⚠️ Пожалуйста, введите вопрос!</div>', unsafe_allow_html=True)
+
