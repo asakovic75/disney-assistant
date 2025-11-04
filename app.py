@@ -3,22 +3,42 @@ import pandas as pd
 from openai import OpenAI
 import os
 
-# --- Настройки страницы ---
-st.set_page_config(page_title="Умный ассистент", page_icon="✨", layout="wide")
+st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
 st.markdown("""
 <style>
-    /* Устанавливаем фирменный фиолетовый фон */
+    /* Подключаем кастомный шрифт, если нужно */
+    @import url('https://fonts.googleapis.com/css2?family=Waltograph&family=Nunito:wght@400;700&display=swap');
+
+    /* Фирменный фиолетовый фон */
     .stApp, [data-testid="stHeader"] {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
-    /* Делаем весь основной текст и заголовки белыми */
-    body, p, h1, h2, h3, h4, h5, h6, .st-emotion-cache-16txtl3, .st-emotion-cache-1629p8f p {
+    /* Стили для заголовков */
+    h1, h3 {
         color: #FFFFFF !important;
+        text-align: center;
     }
 
-    /* Стили для полей ввода (selectbox и text_input) */
+    /* Кастомный шрифт для главного заголовка */
+    h1 {
+        font-family: 'Waltograph', cursive !important;
+        font-size: 8rem !important;
+        text-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    h3 {
+        font-family: 'Nunito', sans-serif !important;
+        font-size: 2.5rem !important;
+        font-weight: 600;
+    }
+
+    /* ИСПРАВЛЕНИЕ: Выравниваем текст-плейсхолдер в полях ввода */
+    .st-emotion-cache-1629p8f div[data-baseweb="select"] {
+        text-align: center;
+    }
+    
     [data-testid="stSelectbox"] > div > div, [data-testid="stTextInput"] input {
         border-radius: 25px !important;
         border: 3px solid rgba(255, 255, 255, 0.6) !important;
@@ -27,9 +47,10 @@ st.markdown("""
         background: rgba(255, 255, 255, 0.15) !important;
         color: white !important;
         min-height: 80px !important;
+        text-align: center; /* Центрируем вводимый текст */
     }
 
-    /* Стили для кнопки "Найти ответ" */
+    /* Стили для кнопки */
     .stButton button {
         border-radius: 30px !important;
         padding: 25px 40px !important;
@@ -40,43 +61,46 @@ st.markdown("""
         border: none !important;
     }
 
-    /* Стиль для блока с финальным ответом: белый фон, темный текст */
+    /* Блок с ответом */
     .big-answer-text {
         font-size: 1.5rem !important;
         line-height: 1.6;
         background: #FFFFFF;
-        color: #111111 !important; /* Важно: темный текст для читаемости */
+        color: #111111 !important;
         padding: 2.5rem;
         border-radius: 20px;
-        border-left: 10px solid #667eea;
-        margin-top: 1.5rem;
-    }
-    
-    /* Стили для сообщения "Готово!" и вопроса пользователя */
-    .big-success-message, .user-question {
-        font-size: 2.5rem !important;
-        text-align: center;
-        font-weight: 600;
-        color: #FFFFFF !important;
-    }
-    
-    /* Спиннер и сообщения об ошибках/предупреждениях */
-    .spinner-text, .big-warning-message, .big-error-message {
-        font-size: 2.5rem !important;
-        color: #FFFFFF !important;
-        text-align: center;
-        font-weight: 600;
-    }
-    
-    .big-error-message {
-        color: #ff6b6b !important;
     }
 
+    /* Сообщения "Готово", вопрос пользователя, спиннер */
+    .big-success-message, .user-question, .spinner-text {
+        font-size: 2.5rem !important;
+        text-align: center;
+        font-weight: 600;
+        color: #FFFFFF !important;
+    }
+
+    /* АНИМАЦИЯ: Стиль и ключевые кадры для робота */
+    .animated-robot {
+        position: fixed;
+        bottom: 20px;
+        width: 80px;
+        height: 80px;
+        background-image: url('https://raw.githubusercontent.com/asakovic75/disney-assistant/main/pixel_robot.png'); /* Прямая ссылка на вашего робота на GitHub */
+        background-size: contain;
+        background-repeat: no-repeat;
+        animation: moveAcross 25s linear infinite;
+        z-index: 999;
+    }
+
+    @keyframes moveAcross {
+        0% { transform: translateX(-100px); }
+        100% { transform: translateX(100vw); }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 @st.cache_data
 def create_knowledge_base():
@@ -102,8 +126,11 @@ def create_knowledge_base():
         st.error(f"Ошибка при загрузке данных: {e}")
         return None
 
+# --- Добавляем анимированного робота на страницу ---
+st.markdown("<div class='animated-robot'></div>", unsafe_allow_html=True)
 
-st.title("✨ Умный ассистент ✨")
+# --- Обновляем заголовок ---
+st.title("✨ Умный ассистент")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
 example_questions = [
