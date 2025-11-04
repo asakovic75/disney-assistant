@@ -43,7 +43,7 @@ def create_knowledge_base():
         return None
 
 # --- Интерфейс ---
-st.title("✨ Пиксель ✨")
+st.title("✨ Умный ассистент")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
 example_questions = [
@@ -166,3 +166,4 @@ if knowledge_base_text and GROQ_API_KEY:
                 answer_placeholder.markdown(f'<div class="big-error-message">❌ Произошла ошибка: {e}</div>', unsafe_allow_html=True)
     elif not user_query and ask_button:
         answer_placeholder.markdown('<div class="big-warning-message">⚠️ ПОЖАЛУЙСТА, ВЫБЕРИТЕ ВОПРОС ИЛИ НАПИШИТЕ СВОЙ!</div>', unsafe_allow_html=True)
+
