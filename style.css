@@ -1,59 +1,46 @@
-@import url('https://fonts.googleapis.com/css2?family=Waltograph&family=Nunito:wght@400;700&display=swap');
+/* style.css (ФИНАЛЬНАЯ ВЕРСИЯ С ИСПРАВЛЕНИЯМИ) */
 
-/* Фирменный фиолетовый фон */
+/* ИЗМЕНЕНИЕ: Используем только один шрифт */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+/* Фирменный фон */
 .stApp, [data-testid="stHeader"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Nunito', sans-serif !important;
 }
 
 /* Стили для заголовков */
 h1, h3 {
     color: #FFFFFF !important;
     text-align: center;
-}
-
-h1 {
-    font-family: 'Waltograph', cursive !important;
-    font-size: 8rem !important;
-}
-
-h3 {
     font-family: 'Nunito', sans-serif !important;
-    font-size: 2.5rem !important;
-    font-weight: 600;
 }
 
-/* --- ИСПРАВЛЕНИЯ ДЛЯ ПОЛЕЙ ВВОДА --- */
+h1 { font-size: 6rem !important; }
+h3 { font-size: 2.5rem !important; }
 
-/* Общий контейнер для полей ввода - убираем фон */
-[data-testid="stSelectbox"], [data-testid="stTextInput"] {
+
+/* --- НОВЫЕ СТИЛИ ДЛЯ ЕДИНОГО ПОЛЯ ВВОДА --- */
+[data-testid="stSelectbox"] {
     background-color: transparent !important;
 }
 
-/* Стилизация самих полей (применяется к обоим) */
-[data-testid="stSelectbox"] > div > div, 
-[data-testid="stTextInput"] input {
+[data-testid="stSelectbox"] > div > div {
     border-radius: 25px !important;
     border: 3px solid rgba(255, 255, 255, 0.6) !important;
     padding: 25px 30px !important;
     font-size: 2rem !important;
-    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон */
-    color: white !important; /* Белый цвет текста */
+    background: rgba(255, 255, 255, 0.15) !important;
     min-height: 80px !important;
 }
 
-/* ИСПРАВЛЕНИЕ №1: Делаем видимым ВЫБРАННЫЙ текст в выпадающем списке */
+/* Делаем текст (вводимый и выбранный) видимым */
+[data-testid="stSelectbox"] input, 
 [data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-    background-color: transparent !important; /* Убираем любой случайный фон */
-    color: white !important; /* Заставляем текст быть белым */
-}
-
-/* ИСПРАВЛЕНИЕ №2: Гарантируем, что поле для ввода текста имеет тот же стиль */
-[data-testid="stTextInput"] input {
-    background: rgba(255, 255, 255, 0.15) !important;
     color: white !important;
 }
 
-/* Стили для выпадающего списка опций */
+/* Стиль для выпадающего списка */
 div[data-baseweb="popover"] ul {
     background-color: #764ba2 !important;
     border: 2px solid white !important;
@@ -62,7 +49,6 @@ div[data-baseweb="popover"] ul {
 div[data-baseweb="popover"] ul li {
     color: white !important;
 }
-
 
 /* Стили для кнопки */
 .stButton button {
@@ -85,7 +71,7 @@ div[data-baseweb="popover"] ul li {
     border-radius: 20px;
 }
 
-/* Сообщения "Готово", вопрос пользователя, спиннер */
+/* Общие стили */
 .big-success-message, .user-question, .spinner-text {
     font-size: 2.5rem !important;
     text-align: center;
