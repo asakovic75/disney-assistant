@@ -148,15 +148,19 @@ if knowledge_base_text and GROQ_API_KEY:
                     reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
                     final_answer_text = final_answer_part.strip()
                     
-                    full_response = f"{reasoning_text}\n\n---\n\n**{final_answer_text}**"
+                    reasoning_html = reasoning_text.replace('\n', '<br>')
+                    final_answer_html = final_answer_text.replace('\n', '<br>')
+
+                    full_response_html = f"{reasoning_html}<br><br><hr><br><strong>{final_answer_html}</strong>"
+
                 except ValueError:
-                    full_response = answer.replace("[РАССУЖДЕНИЯ]", "").replace("[ОТВЕТ]", "").strip()
+                    full_response_html = answer.replace("[РАССУЖДЕНИЯ]", "").replace("[ОТВЕТ]", "").replace('\n', '<br>').strip()
 
                 answer_placeholder.markdown(f'<div class="big-success-message">🎉 ГОТОВО! Вот что мне удалось найти:</div>', unsafe_allow_html=True)
                 st.markdown(f'<div class="user-question">Ваш вопрос: {user_query}</div>', unsafe_allow_html=True)
                 st.markdown("---")
 
-                st.markdown(f'<div class="big-answer-text">{full_response}</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="big-answer-text">{full_response_html}</div>', unsafe_allow_html=True)
 
             except Exception as e:
                 answer_placeholder.markdown(f'<div class="big-error-message">❌ Произошла ошибка: {e}</div>', unsafe_allow_html=True)
