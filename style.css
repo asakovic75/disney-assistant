@@ -1,4 +1,3 @@
-/* Подключаем и используем шрифт Nunito для всего приложения */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
 body, .stApp {
@@ -15,32 +14,38 @@ h1, h3 {
     color: #FFFFFF !important;
     text-align: center;
 }
+h1 { font-size: 6rem !important; font-weight: 700; }
+h3 { font-size: 2.5rem !important; font-weight: 400; }
 
-h1 {
-    font-size: 6rem !important;
-    font-weight: 700;
-}
-
-h3 {
-    font-size: 2.5rem !important;
-    font-weight: 400;
-}
 
 /* Контейнер поля ввода */
 [data-testid="stTextInput"] {
-    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон для всего блока */
-    border-radius: 25px !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 50px !important; /* Делаем его полностью овальным */
     border: 3px solid rgba(255, 255, 255, 0.6) !important;
+    padding: 0 !important; /* Убираем лишние отступы */
 }
 
 /* Само поле ввода внутри контейнера */
 [data-testid="stTextInput"] input {
-    background-color: transparent !important; /* Делаем фон самого input прозрачным */
-    color: white !important; /* Белый цвет текста */
+    background: transparent !important;
+    color: white !important;
     font-size: 2rem !important;
     padding: 25px 30px !important;
-    min-height: 80px !important;
-    border: none !important; /* Убираем собственную рамку input */
+    border: none !important;
+    outline: none !important; /* Убираем обводку при фокусе */
+    box-shadow: none !important; /* Убираем тени */
+    width: 100%;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 40px #6d75b3 inset !important; /* Заливаем фон цветом, похожим на фон страницы */
+    -webkit-text-fill-color: white !important; /* Делаем цвет текста белым */
+    transition: background-color 5000s ease-in-out 0s; /* Хак для предотвращения смены фона */
+    border-radius: 50px !important; /* Сохраняем скругление */
 }
 
 /* Стили для кнопки "Найти ответ" */
@@ -59,7 +64,7 @@ h3 {
     font-size: 1.5rem !important;
     line-height: 1.6;
     background: #FFFFFF;
-    color: #111111 !important; /* Темный текст для читаемости */
+    color: #111111 !important;
     padding: 2.5rem;
     border-radius: 20px;
 }
@@ -71,7 +76,6 @@ h3 {
     font-weight: 600;
     color: #FFFFFF !important;
 }
-
 .big-error-message {
     color: #ff6b6b !important;
 }
