@@ -16,7 +16,6 @@ h1, h3 {
     text-align: center;
 }
 
-/* ИЗМЕНЕНИЕ: Уменьшаем главный заголовок */
 h1 {
     font-size: 6rem !important;
     font-weight: 700;
@@ -27,15 +26,21 @@ h3 {
     font-weight: 400;
 }
 
-/* --- СТИЛИ ДЛЯ ЕДИНОГО ПОЛЯ ВВОДА --- */
-[data-testid="stTextInput"] input {
+/* Контейнер поля ввода */
+[data-testid="stTextInput"] {
+    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон для всего блока */
     border-radius: 25px !important;
     border: 3px solid rgba(255, 255, 255, 0.6) !important;
-    padding: 25px 30px !important;
-    font-size: 2rem !important;
-    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон */
+}
+
+/* Само поле ввода внутри контейнера */
+[data-testid="stTextInput"] input {
+    background-color: transparent !important; /* Делаем фон самого input прозрачным */
     color: white !important; /* Белый цвет текста */
+    font-size: 2rem !important;
+    padding: 25px 30px !important;
     min-height: 80px !important;
+    border: none !important; /* Убираем собственную рамку input */
 }
 
 /* Стили для кнопки "Найти ответ" */
