@@ -30,7 +30,7 @@ h3 { font-size: 2.5rem !important; font-weight: 400; }
 [data-testid="stTextInput"] input {
     background: transparent !important; /* Фон самого поля прозрачный, чтобы был виден фон контейнера */
     color: #111111 !important; /* Делаем текст черным */
-    font-size: 2rem !important;
+    font-size: 1rem !important;
     padding: 25px 30px !important;
     min-height: 80px !important;
     border: none !important;
@@ -79,3 +79,4 @@ input:-webkit-autofill:active {
 .big-error-message {
     color: #ff6b6b !important;
 }
+
