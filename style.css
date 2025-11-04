@@ -1,56 +1,44 @@
-/* style.css (ФИНАЛЬНАЯ ВЕРСИЯ С ИСПРАВЛЕНИЯМИ) */
-
-/* ИЗМЕНЕНИЕ: Используем только один шрифт */
+/* Подключаем и используем шрифт Nunito для всего приложения */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
-/* Фирменный фон */
+body, .stApp {
+    font-family: 'Nunito', sans-serif !important;
+}
+
+/* Фирменный фиолетовый фон */
 .stApp, [data-testid="stHeader"] {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    font-family: 'Nunito', sans-serif !important;
 }
 
 /* Стили для заголовков */
 h1, h3 {
     color: #FFFFFF !important;
     text-align: center;
-    font-family: 'Nunito', sans-serif !important;
 }
 
-h1 { font-size: 6rem !important; }
-h3 { font-size: 2.5rem !important; }
-
-
-/* --- НОВЫЕ СТИЛИ ДЛЯ ЕДИНОГО ПОЛЯ ВВОДА --- */
-[data-testid="stSelectbox"] {
-    background-color: transparent !important;
+/* ИЗМЕНЕНИЕ: Уменьшаем главный заголовок */
+h1 {
+    font-size: 6rem !important;
+    font-weight: 700;
 }
 
-[data-testid="stSelectbox"] > div > div {
+h3 {
+    font-size: 2.5rem !important;
+    font-weight: 400;
+}
+
+/* --- СТИЛИ ДЛЯ ЕДИНОГО ПОЛЯ ВВОДА --- */
+[data-testid="stTextInput"] input {
     border-radius: 25px !important;
     border: 3px solid rgba(255, 255, 255, 0.6) !important;
     padding: 25px 30px !important;
     font-size: 2rem !important;
-    background: rgba(255, 255, 255, 0.15) !important;
+    background: rgba(255, 255, 255, 0.15) !important; /* Полупрозрачный фон */
+    color: white !important; /* Белый цвет текста */
     min-height: 80px !important;
 }
 
-/* Делаем текст (вводимый и выбранный) видимым */
-[data-testid="stSelectbox"] input, 
-[data-testid="stSelectbox"] div[data-baseweb="select"] > div {
-    color: white !important;
-}
-
-/* Стиль для выпадающего списка */
-div[data-baseweb="popover"] ul {
-    background-color: #764ba2 !important;
-    border: 2px solid white !important;
-    border-radius: 15px !important;
-}
-div[data-baseweb="popover"] ul li {
-    color: white !important;
-}
-
-/* Стили для кнопки */
+/* Стили для кнопки "Найти ответ" */
 .stButton button {
     border-radius: 30px !important;
     padding: 25px 40px !important;
@@ -61,20 +49,24 @@ div[data-baseweb="popover"] ul li {
     border: none !important;
 }
 
-/* Блок с ответом */
+/* Стиль для блока с финальным ответом */
 .big-answer-text {
     font-size: 1.5rem !important;
     line-height: 1.6;
     background: #FFFFFF;
-    color: #111111 !important;
+    color: #111111 !important; /* Темный текст для читаемости */
     padding: 2.5rem;
     border-radius: 20px;
 }
 
-/* Общие стили */
-.big-success-message, .user-question, .spinner-text {
+/* Стили для вспомогательных сообщений */
+.big-success-message, .user-question, .spinner-text, .big-warning-message, .big-error-message {
     font-size: 2.5rem !important;
     text-align: center;
     font-weight: 600;
     color: #FFFFFF !important;
+}
+
+.big-error-message {
+    color: #ff6b6b !important;
 }
