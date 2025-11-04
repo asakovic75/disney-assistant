@@ -3,16 +3,77 @@ import pandas as pd
 from openai import OpenAI
 import os
 
+# --- Настройки страницы ---
 st.set_page_config(page_title="Умный ассистент", page_icon="✨", layout="wide")
 
+st.markdown("""
+<style>
+    /* Устанавливаем фирменный фиолетовый фон */
+    .stApp, [data-testid="stHeader"] {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
 
-def local_css(file_name):
-    try:
-        with open(file_name, "r", encoding="utf-8") as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.error("Критическая ошибка: не найден файл стилей style.css!")
+    /* Делаем весь основной текст и заголовки белыми */
+    body, p, h1, h2, h3, h4, h5, h6, .st-emotion-cache-16txtl3, .st-emotion-cache-1629p8f p {
+        color: #FFFFFF !important;
+    }
 
+    /* Стили для полей ввода (selectbox и text_input) */
+    [data-testid="stSelectbox"] > div > div, [data-testid="stTextInput"] input {
+        border-radius: 25px !important;
+        border: 3px solid rgba(255, 255, 255, 0.6) !important;
+        padding: 25px 30px !important;
+        font-size: 2rem !important;
+        background: rgba(255, 255, 255, 0.15) !important;
+        color: white !important;
+        min-height: 80px !important;
+    }
+
+    /* Стили для кнопки "Найти ответ" */
+    .stButton button {
+        border-radius: 30px !important;
+        padding: 25px 40px !important;
+        font-size: 3rem !important;
+        font-weight: 700;
+        background: linear-gradient(45deg, #FF6B6B, #FF8E53) !important;
+        color: white !important;
+        border: none !important;
+    }
+
+    /* Стиль для блока с финальным ответом: белый фон, темный текст */
+    .big-answer-text {
+        font-size: 1.5rem !important;
+        line-height: 1.6;
+        background: #FFFFFF;
+        color: #111111 !important; /* Важно: темный текст для читаемости */
+        padding: 2.5rem;
+        border-radius: 20px;
+        border-left: 10px solid #667eea;
+        margin-top: 1.5rem;
+    }
+    
+    /* Стили для сообщения "Готово!" и вопроса пользователя */
+    .big-success-message, .user-question {
+        font-size: 2.5rem !important;
+        text-align: center;
+        font-weight: 600;
+        color: #FFFFFF !important;
+    }
+    
+    /* Спиннер и сообщения об ошибках/предупреждениях */
+    .spinner-text, .big-warning-message, .big-error-message {
+        font-size: 2.5rem !important;
+        color: #FFFFFF !important;
+        text-align: center;
+        font-weight: 600;
+    }
+    
+    .big-error-message {
+        color: #ff6b6b !important;
+    }
+
+</style>
+""", unsafe_allow_html=True)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
@@ -42,9 +103,7 @@ def create_knowledge_base():
         return None
 
 
-local_css("style.css")
-
-st.title("Умный ассистент")
+st.title("✨ Умный ассистент ✨")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 
 example_questions = [
@@ -65,7 +124,7 @@ st.markdown("---")
 selected_query = st.selectbox(" ", example_questions, key="selectbox_query", label_visibility="collapsed")
 custom_query = st.text_input(" ", placeholder="Или напишите свой вопрос здесь...", label_visibility="collapsed", key="text_input")
 
-st.markdown("<div style='margin-bottom: 5rem;'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
 
 ask_button = st.button("**НАЙТИ ОТВЕТ**", use_container_width=True, key="find_answer")
 
