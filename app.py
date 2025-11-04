@@ -17,28 +17,26 @@ def local_css(file_name):
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 
-# БАЗА ЗНАНИЙ
+#БАЗА ЗНАНИЙ
 @st.cache_data
 def create_knowledge_base():
     try:
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
         knowledge_base = ""
-
         for _, work in works_df.iterrows():
-            knowledge_base += f"Название:{work['Name']},"
-            knowledge_base += f"бюджет и сборы:{work.get('Бюджет и сборы', 'не указано')},"
-            knowledge_base += f"возраст:{work.get('Возраст', 'не указано')},"
-            knowledge_base += f"год выпуска:{work.get('Год выпуска', 'не указано')},"
-            knowledge_base += f"диснейленд:{work.get('Диснейленд', 'не указано')},"
-            knowledge_base += f"жанр:{work.get('Жанр', 'не указано')},"
-            knowledge_base += f"исполнители:{work.get('Исполнители', 'не указано')},"
-            knowledge_base += f"награды:{work.get('Награды', 'не указано')},"
-            knowledge_base += f"персонажи:{work.get('Персонажи', 'не указано')},"
-            knowledge_base += f"песни:{work.get('Песни', 'не указано')},"
-            knowledge_base += f"продолжительность:{work.get('Продолжительность', 'не указано')},"
-            knowledge_base += f"рейтинг:{work.get('Рейтинг', 'не указано')},"
-            knowledge_base += f"студия:{work.get('Студия', 'не указано')},"
-            knowledge_base += f"тип:{work.get('Тип', 'не указано')};"
+            knowledge_base += "-----\n" # Добавляем разделитель
+            knowledge_base += f"Название: {work['Name']}\n"
+            knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы', 'не указано')}\n"
+            knowledge_base += f"Возраст: {work.get('Возраст', 'не указано')}\n"
+            knowledge_base += f"Год выпуска: {work.get('Год выпуска', 'не указано')}\n"
+            knowledge_base += f"Исполнители: {work.get('Исполнители', 'не указано')}\n"
+            knowledge_base += f"Награды: {work.get('Награды', 'не указано')}\n"
+            knowledge_base += f"Персонажи: {work.get('Персонажи', 'не указано')}\n"
+            knowledge_base += f"Песни: {work.get('Песни', 'не указано')}\n"
+            knowledge_base += f"Продолжительность: {work.get('Продолжительность', 'не указано')}\n"
+            knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
+            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
+            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
 
         return knowledge_base
 
@@ -89,29 +87,24 @@ example_questions = [
 # --- ИНТЕРФЕЙС ---
 st.markdown("---")
 
-# Выбор вопроса
 selected_query = st.selectbox(
-    "",
+    " ",
     example_questions,
     key="selectbox_query",
     label_visibility="collapsed"
 )
 
-# Поле для своего вопроса
 custom_query = st.text_input(
-    "",
+    " ",
     placeholder="Или напишите свой вопрос здесь...",
     label_visibility="collapsed",
     key="text_input"
 )
 
-# Добавляем больший отступ перед кнопкой для видимости полей
 st.markdown("<div style='margin-bottom: 5rem;'></div>", unsafe_allow_html=True)
 
-# Кнопка запроса
 ask_button = st.button("**НАЙТИ ОТВЕТ**", use_container_width=True, key="find_answer")
 
-# Определяем итоговый запрос
 if custom_query.strip():
     user_query = custom_query
 elif selected_query and selected_query != "Выберите вопрос из списка...":
@@ -130,7 +123,6 @@ if knowledge_base_text and GROQ_API_KEY:
         st.error(f"Ошибка инициализации клиента: {e}")
         client = None
 
-    # Обработка запроса при нажатии кнопки
     if client and user_query and ask_button:
         with st.spinner(""):
             spinner_html = """
@@ -143,26 +135,25 @@ if knowledge_base_text and GROQ_API_KEY:
             st.markdown(spinner_html, unsafe_allow_html=True)
 
             try:
-                prompt = f"""Ты - ассистент, который отвечает ТОЛЬКО на основе предоставленных данных о фильмах и мультфильмах Дисней. 
-Если информации нет в данных - сообщи об этом кратко.
+                prompt = f"""Твоя роль - быть сверх-точным ассистентом-базой данных по фильмам Disney.
 
-Данные: {knowledge_base_text}
+СТРОГИЕ ИНСТРУКЦИИ:
+1.  **НИКАКИХ ДОГАДОК:** Отвечай ИСКЛЮЧИТЕЛЬНО на основе предоставленных ниже "Данных". Не используй свои общие знания.
+2.  **ЕСЛИ ДАННЫХ НЕТ:** Если в данных нет ответа или указано "не указано", твой ЕДИНСТВЕННЫЙ ответ должен быть: "К сожалению, эта информация не найдена в архиве." Не пытайся угадать или предположить.
+3.  **ТОЧНАЯ ФИЛЬТРАЦИЯ:** Когда пользователь просит отфильтровать что-то (например, "фильмы 16+"), ты должен найти ТОЧНОЕ совпадение. Если он просит "16+", а в данных есть только "12+", ты не должен показывать "12+".
+4.  **ПРЯМОЙ ОТВЕТ:** Не используй вводные фразы вроде "Согласно данным". Сразу давай ответ по существу.
 
-Вопрос: {user_query}
+ДАННЫЕ:
+{knowledge_base_text}
 
-Инструкции:
-1. Отвечай ТОЛЬКО на основе предоставленных данных.
-2. Если информации нет в данных - скажи "К сожалению, информация не найдена в архиве".
-3. Отвечай подробно и структурировано на русском языке.
-4. Используй только факты из предоставленных данных.
-5. Не начинай ответ с фраз "В моей базе данных", "Согласно данным" - сразу переходи к сути.
+ВОПРОС: {user_query}
 
-Ответ:"""
-
+ТОЧНЫЙ ОТВЕТ:"""
+                
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[{"role": "user", "content": prompt}],
-                    temperature=0.3,
+                    temperature=0.1,
                     max_tokens=2000
                 )
                 answer = response.choices[0].message.content
@@ -198,7 +189,4 @@ else:
         st.markdown(
             '<div class="big-error-message">❌ Не удалось загрузить базу знаний.</div>',
             unsafe_allow_html=True
-
         )
-
-
