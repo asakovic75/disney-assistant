@@ -124,8 +124,10 @@ if knowledge_base_text and GROQ_API_KEY:
                     reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
                     final_answer_text = final_answer_part.strip()
                     
+                    reasoning_html = reasoning_text.replace('\n', '<br>')
                     final_answer_html = final_answer_text.replace('\n', '<br>')
-                    full_response_html = f"<strong>{final_answer_html}</strong>"
+
+                    full_response_html = f"{reasoning_html}<br><br><hr><br><strong>{final_answer_html}</strong>"
                 except ValueError:
                     full_response_html = answer.replace("[РАССУЖДЕНИЯ]", "").replace("[ОТВЕТ]", "").replace('\n', '<br>').strip()
 
