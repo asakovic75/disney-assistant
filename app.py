@@ -5,6 +5,7 @@ import os
 
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
+# --- Встроенные CSS стили ---
 css_styles = """
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
@@ -17,11 +18,8 @@ body, .stApp {
     background: transparent;
 }
 
-h1, h3, h5 {
-    color: #31333F !important;
-    text-align: center;
-}
-h5 { font-size: 1.2rem !important; font-weight: 700; }
+h1 { font-size: 1.5rem !important; text-align: left; }
+h3, h5 { font-size: 1.2rem !important; text-align: left; }
 
 [data-testid="stTextInput"] {
     background: #FFFFFF !important;
@@ -86,6 +84,7 @@ input:-webkit-autofill:active {
 }
 """
 st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
+
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
