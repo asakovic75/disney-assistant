@@ -5,14 +5,87 @@ import os
 
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
-def local_css(file_name):
-    try:
-        with open(file_name, "r", encoding="utf-8") as f:
-            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    except FileNotFoundError:
-        st.error(f"Критическая ошибка: не найден файл стилей '{file_name}'!")
+css_styles = """
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
-local_css("style.css")
+body, .stApp {
+    font-family: 'Nunito', sans-serif !important;
+    background: transparent;
+}
+
+[data-testid="stHeader"] {
+    background: transparent;
+}
+
+h1, h3, h5 {
+    color: #31333F !important;
+    text-align: center;
+}
+h5 { font-size: 1.2rem !important; font-weight: 700; }
+
+[data-testid="stTextInput"] {
+    background: #FFFFFF !important;
+    border-radius: 12px !important;
+    border: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+[data-testid="stTextInput"] input {
+    background: transparent !important;
+    color: #111111 !important;
+    font-size: 0.9rem !important;
+    padding: 10px 15px !important;
+    border: none !important;
+    outline: none !important;
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px #FFFFFF inset !important;
+    -webkit-text-fill-color: #111111 !important;
+    transition: background-color 5000s ease-in-out 0s;
+    border-radius: 12px !important;
+}
+
+.stButton button {
+    border-radius: 10px !important;
+    padding: 10px 20px !important;
+    font-size: 0.9rem !important;
+    font-weight: 700;
+    background: #3B82F6 !important;
+    color: white !important;
+    border: none !important;
+}
+
+.answer-text {
+    font-size: 0.95rem !important;
+    line-height: 1.6;
+    background: #F9FAFB;
+    color: #111827 !important;
+    padding: 1rem;
+    border-radius: 10px;
+    border: 1px solid #E5E7EB;
+}
+
+.warning-message, .error-message {
+    font-size: 1rem !important;
+    text-align: center;
+    font-weight: 600;
+    padding: 1rem;
+    border-radius: 10px;
+}
+.warning-message {
+    background-color: #FFFBEB;
+    color: #F59E0B !important;
+}
+.error-message {
+    background-color: #FEF2F2;
+    color: #EF4444 !important;
+}
+"""
+st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
