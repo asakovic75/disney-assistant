@@ -3,10 +3,8 @@ import pandas as pd
 from openai import OpenAI
 import os
 
-# --- Настройки страницы ---
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
-# --- Функция для загрузки CSS стилей ---
 def local_css(file_name):
     """Загружает внешний CSS-файл для стилизации приложения."""
     try:
@@ -15,14 +13,11 @@ def local_css(file_name):
     except FileNotFoundError:
         st.error(f"Критическая ошибка: не найден файл стилей '{file_name}'!")
 
-# Применяем стили из файла style.css
 local_css("style.css")
 
 
-# --- Получение API ключа из секретов Streamlit ---
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# --- Функция для загрузки и форматирования базы знаний ---
 @st.cache_data
 def create_knowledge_base():
     """Читает CSV-файл и преобразует его в единый текстовый блок для AI-модели."""
@@ -50,15 +45,11 @@ def create_knowledge_base():
         st.error(f"Ошибка при загрузке данных: {e}")
         return None
 
-# === Начало интерфейса приложения ===
-
-st.title("✨ Умный ассистент")
 st.markdown("### Узнайте всё о любимых фильмах и мультфильмах!")
 st.markdown("---")
 
-# --- ИЗМЕНЕНИЕ: Оставляем только одно поле для ввода текста ---
 user_query = st.text_input(
-    label=" ",  # Пустая метка, чтобы ее скрыть
+    label=" ",
     placeholder="Напишите свой вопрос здесь...",
     key="user_input_box",
     label_visibility="collapsed"
@@ -68,27 +59,21 @@ st.markdown("<div style='margin-bottom: 2rem;'></div>", unsafe_allow_html=True)
 
 ask_button = st.button("**НАЙТИ ОТВЕТ**", use_container_width=True, key="find_answer")
 
-# Загружаем базу знаний
 knowledge_base_text = create_knowledge_base()
-# Создаем пустой контейнер, куда позже выведем ответ
 answer_placeholder = st.empty()
 
-# Проверяем, что все готово к работе
 if knowledge_base_text and GROQ_API_KEY:
     try:
-        # Инициализируем клиент для обращения к AI-модели
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
         model_name = "meta-llama/llama-4-scout-17b-16e-instruct"
     except Exception as e:
         st.error(f"Ошибка инициализации клиента: {e}")
         client = None
 
-    # Основная логика: выполняется, если есть клиент, есть запрос и нажата кнопка
     if client and user_query and ask_button:
         with st.spinner(""):
             st.markdown("<div class='spinner-text'>✨ Ищу ответ в волшебных архивах Дисней...</div>", unsafe_allow_html=True)
             try:
-                # Формируем промпт (инструкцию) для AI-модели
                 prompt = f"""Твоя роль - быть сверх-точным ассистентом-базой данных по фильмам Disney.
 
 СТРОГИЕ ИНСТРУКЦИИ:
@@ -133,7 +118,6 @@ if knowledge_base_text and GROQ_API_KEY:
 
 ОТВЕТ В СТРОГОМ ФОРМАТЕ:"""
 
-                # Отправляем запрос к AI-модели
                 response = client.chat.completions.create(
                     model=model_name,
                     messages=[{"role": "user", "content": prompt}],
@@ -142,7 +126,6 @@ if knowledge_base_text and GROQ_API_KEY:
                 )
                 answer = response.choices[0].message.content
 
-                # Обрабатываем и форматируем ответ для красивого вывода
                 try:
                     reasoning_part, final_answer_part = answer.split("[ОТВЕТ]")
                     reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
@@ -155,7 +138,6 @@ if knowledge_base_text and GROQ_API_KEY:
                 except ValueError:
                     full_response_html = answer.replace("[РАССУЖДЕНИЯ]", "").replace("[ОТВЕТ]", "").replace('\n', '<br>').strip()
 
-                # Выводим результат на страницу
                 answer_placeholder.markdown(f'<div class="big-success-message">🎉 ГОТОВО! Вот что мне удалось найти:</div>', unsafe_allow_html=True)
                 st.markdown(f'<div class="user-question">Ваш вопрос: {user_query}</div>', unsafe_allow_html=True)
                 st.markdown("---")
@@ -163,7 +145,5 @@ if knowledge_base_text and GROQ_API_KEY:
 
             except Exception as e:
                 answer_placeholder.markdown(f'<div class="big-error-message">❌ Произошла ошибка: {e}</div>', unsafe_allow_html=True)
-    # Если пользователь нажал кнопку, но не ввел вопрос
     elif not user_query and ask_button:
         answer_placeholder.markdown('<div class="big-warning-message">⚠️ Пожалуйста, введите вопрос!</div>', unsafe_allow_html=True)
-
