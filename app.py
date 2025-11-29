@@ -104,6 +104,18 @@ GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 def create_knowledge_base():
     try:
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
+        
+        # Считаем статистику программно, чтобы не зависеть от ИИ
+        total_count = len(works_df)
+        movies_count = len(works_df[works_df['Тип'].str.contains("Фильм", case=False, na=False)])
+        cartoons_count = len(works_df[works_df['Тип'].str.contains("Мультфильм", case=False, na=False)])
+        
+        stats = {
+            "total": total_count,
+            "movies": movies_count,
+            "cartoons": cartoons_count
+        }
+
         knowledge_base = ""
         for _, work in works_df.iterrows():
             knowledge_base += "-----\n"
@@ -121,23 +133,24 @@ def create_knowledge_base():
             knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
             knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
             knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
-        return knowledge_base
+            
+        return knowledge_base, stats
     except Exception as e:
         st.error(f"Ошибка при загрузке данных: {e}")
-        return None
+        return None, None
 
 st.markdown("### ✨ Умный ассистент Пиксель")
 
 user_query = st.text_input(
     label=" ",
-    placeholder="Например: Фильмы с рейтингом ниже 7.0...",
+    placeholder="Например: Сколько всего фильмов в базе? или Фильмы с рейтингом ниже 7.0...",
     key="user_input_box",
     label_visibility="collapsed"
 )
 
 ask_button = st.button("Найти ответ", use_container_width=True)
 
-knowledge_base_text = create_knowledge_base()
+knowledge_base_text, db_stats = create_knowledge_base()
 answer_placeholder = st.empty()
 
 if knowledge_base_text and GROQ_API_KEY:
@@ -151,19 +164,28 @@ if knowledge_base_text and GROQ_API_KEY:
     if client and user_query and ask_button:
         with st.spinner("✨ Пиксель ищет информацию..."):
             try:
-                prompt = f"""Ты - Пиксель, умный ассистент по базе Disney.
+                # Вставляем точную статистику прямо в промпт
+                stats_info = f"""
+                ТОЧНАЯ СТАТИСТИКА БАЗЫ (ДЛЯ ВОПРОСОВ О КОЛИЧЕСТВЕ):
+                - Всего произведений: {db_stats['total']}
+                - Фильмов (Тип: Фильм): {db_stats['movies']}
+                - Мультфильмов (Тип: Мультфильм): {db_stats['cartoons']}
+                Если спрашивают 'сколько всего', бери числа ОТСЮДА, не считай вручную.
+                """
+
+                prompt = f"""Ты - Пиксель, умный ассистент.
+
+{stats_info}
 
 СТРОГИЕ ПРАВИЛА ФИЛЬТРАЦИИ:
+1. ТИП:
+   - "Фильм" -> искать строго `Тип: Фильм`.
+   - "Мультфильм" -> искать строго `Тип: Мультфильм`.
+   - Если тип не указан -> искать везде.
 
-1. ТИП ПРОИЗВЕДЕНИЯ (ГЛАВНОЕ ПРАВИЛО):
-   - Если пользователь пишет "Фильм" (кино): ИСКАТЬ ТОЛЬКО `Тип: Фильм`. ИГНОРИРОВАТЬ `Тип: Мультфильм`.
-   - Если пользователь пишет "Мультфильм" (анимация): ИСКАТЬ ТОЛЬКО `Тип: Мультфильм`. ИГНОРИРОВАТЬ `Тип: Фильм`.
-   - Если тип не указан, искать везде.
-
-2. ЧИСЛОВАЯ ПРОВЕРКА:
-   - Сравнивай числа математически точно. 
-   - "Рейтинг ниже 7.0" -> 7.3 НЕ ПОДХОДИТ. 6.9 ПОДХОДИТ.
-   - "После 2015 года" -> 2015 НЕ ПОДХОДИТ. 2016 ПОДХОДИТ.
+2. ЧИСЛА (МАТЕМАТИКА):
+   - "Рейтинг ниже 7.0" -> 7.3 ЗАПРЕЩЕНО. 6.9 РАЗРЕШЕНО.
+   - "После 2015 года" -> 2015 ЗАПРЕЩЕНО. 2016 РАЗРЕШЕНО.
 
 ФОРМАТ ВЫВОДА:
 [РАССУЖДЕНИЯ]
@@ -182,12 +204,12 @@ if knowledge_base_text and GROQ_API_KEY:
 🎵 Песни: [песни]
 🎡 Диснейленд: [связь с парком]
 
-(Только подходящие записи)
+(Выводи только подходящие записи. Если вопрос про количество - не выводи карточки, переходи к анализу)
 
 АНАЛИЗ: [кратко]
 
 [ОТВЕТ]
-[Здесь только итоговый текст ответа. Без Markdown символов (** или __). Просто чистый текст.]
+[Здесь только итоговый текст. Без **.]
 
 ДАННЫЕ:
 {knowledge_base_text}
@@ -222,21 +244,21 @@ if knowledge_base_text and GROQ_API_KEY:
                     reasoning_html = reasoning_text.replace('\n', '<br>')
                     reasoning_html = reasoning_html.replace('ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:', '')
                     
-                    reasoning_html = reasoning_html.replace('🎬', '</div><div class="movie-card"><span class="card-title">🎬')
-                    
-                    if reasoning_html.startswith('</div>'):
-                        reasoning_html = reasoning_html[6:]
-                    
-                    if '<div class="movie-card">' in reasoning_html:
+                    # Обработка карточек для красивого вывода
+                    if '🎬' in reasoning_html:
+                        reasoning_html = reasoning_html.replace('🎬', '</div><div class="movie-card"><span class="card-title">🎬')
+                        if reasoning_html.startswith('</div>'):
+                            reasoning_html = reasoning_html[6:]
                         reasoning_html += '</div>'
+                        search_display = f"<div class='search-results-container'><div class='section-header'>🔍 АНАЛИЗ БАЗЫ ДАННЫХ</div>{reasoning_html}</div>"
+                    else:
+                        # Если карточек нет (например, вопрос про количество), не показываем пустой блок
+                        search_display = ""
 
                     final_answer_html = final_answer_text.replace('\n', '<br>')
 
                     full_response_html = f"""
-                    <div class='search-results-container'>
-                        <div class='section-header'>🔍 АНАЛИЗ БАЗЫ ДАННЫХ</div>
-                        {reasoning_html}
-                    </div>
+                    {search_display}
                     <div class='final-answer-box'>
                         <div class='section-header' style='color: #1E3A8A;'>🤖 ОТВЕТ ПИКСЕЛЯ</div>
                         {final_answer_html}
