@@ -3,196 +3,198 @@ import pandas as pd
 from openai import OpenAI
 import os
 
-# --- 1. Настройки страницы (Чистый белый стиль) ---
-st.set_page_config(page_title="Пиксель", page_icon="✨", layout="centered")
+# 1. Настройка страницы
+st.set_page_config(page_title="Пиксель — Disney Assistant", page_icon="✨", layout="wide")
 
-# --- 2. CSS: Простой дизайн ---
+# Получаем ключ из секретов или переменных окружения
+# Рекомендуется использовать st.secrets["GROQ_API_KEY"] для деплоя
+GROQ_API_KEY = os.getenv("GROQ_API_KEY") 
+
+# 2. CSS Стилизация
 st.markdown("""
 <style>
-    /* Глобальный фон и цвет текста */
+    /* Основной фон и текст */
     .stApp {
-        background-color: #ffffff;
-        color: #000000;
+        background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+        color: #ffffff;
     }
     
     /* Заголовок */
-    h1 {
-        font-family: sans-serif;
-        color: #333;
-        font-weight: 700;
+    h1, h2, h3, h4, h5 {
+        color: #e0e0ff !important;
+        font-family: 'Helvetica Neue', sans-serif;
+        text-shadow: 0 0 10px rgba(100, 200, 255, 0.5);
     }
 
-    /* Стиль кнопки */
-    .stButton > button {
-        background-color: #000000; /* Черная кнопка для контраста */
+    /* Поле ввода */
+    .stTextInput input {
+        background-color: rgba(255, 255, 255, 0.1);
         color: white;
-        border-radius: 5px;
+        border: 1px solid #5d54a4;
+        border-radius: 12px;
+    }
+    .stTextInput input:focus {
+        border-color: #9d50bb;
+        box-shadow: 0 0 10px #9d50bb;
+    }
+
+    /* Кнопка */
+    .stButton button {
+        background: linear-gradient(90deg, #6a11cb 0%, #2575fc 100%);
+        color: white;
         border: none;
-        padding: 10px 25px;
+        border-radius: 12px;
         font-weight: bold;
-        transition: 0.3s;
+        transition: all 0.3s ease;
     }
-    .stButton > button:hover {
-        background-color: #333333;
-        color: #ffffff;
-    }
-
-    /* Блок РАССУЖДЕНИЯ (Технический вид) */
-    .reasoning-box {
-        background-color: #f4f4f4; /* Светло-серый фон */
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 15px;
-        margin-bottom: 20px;
-        font-family: 'Consolas', 'Courier New', monospace; /* Моноширинный шрифт */
-        font-size: 0.85em;
-        color: #444;
-        line-height: 1.4;
+    .stButton button:hover {
+        transform: scale(1.02);
+        box-shadow: 0 5px 15px rgba(37, 117, 252, 0.4);
     }
 
-    /* Блок ОТВЕТ (Чистый вид) */
+    /* Блок ответа */
     .answer-box {
-        background-color: #ffffff;
-        border-left: 4px solid #000; /* Черная линия слева */
+        background-color: rgba(255, 255, 255, 0.05);
+        border-left: 5px solid #00d2ff;
         padding: 20px;
-        font-family: sans-serif;
+        border-radius: 10px;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         font-size: 1.1em;
-        color: #000;
         line-height: 1.6;
     }
     
-    /* Подзаголовки блоков */
-    .block-label {
-        font-weight: bold;
-        text-transform: uppercase;
-        font-size: 0.8em;
-        color: #666;
-        margin-bottom: 8px;
-        display: block;
+    /* Сообщение об ошибке */
+    .error-box {
+        background-color: rgba(255, 0, 0, 0.1);
+        border: 1px solid red;
+        padding: 15px;
+        border-radius: 10px;
+        color: #ffcccc;
     }
 </style>
 """, unsafe_allow_html=True)
 
-# --- 3. Инициализация ---
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-
+# 3. Загрузка базы знаний
 @st.cache_data
 def create_knowledge_base():
+    file_path = "ПроизведенияП.csv"
+    if not os.path.exists(file_path):
+        st.error(f"❌ Файл {file_path} не найден! Пожалуйста, добавьте его в папку с проектом.")
+        return None
+        
     try:
-        # Читаем CSV (убедись, что файл лежит рядом со скриптом)
-        works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
-        return works_df
+        works_df = pd.read_csv(file_path).astype(str).fillna('не указано')
+        knowledge_base = ""
+        for _, work in works_df.iterrows():
+            knowledge_base += "-----\n"
+            knowledge_base += f"Название: {work.get('Name', 'не указано')}\n"
+            knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы', 'не указано')}\n"
+            knowledge_base += f"Возраст: {work.get('Возраст', 'не указано')}\n"
+            knowledge_base += f"Год выпуска: {work.get('Год выпуска', 'не указано')}\n"
+            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
+            knowledge_base += f"Награды: {work.get('Награды', 'не указано')}\n"
+            knowledge_base += f"Персонажи: {work.get('Персонажи', 'не указано')}\n"
+            knowledge_base += f"Песни: {work.get('Песни', 'не указано')}\n"
+            knowledge_base += f"Продолжительность: {work.get('Продолжительность', 'не указано')}\n"
+            knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
+            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
+            # Важное поле для различения типа
+            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n" 
+        return knowledge_base
     except Exception as e:
-        st.error(f"Ошибка чтения файла 'ПроизведенияП.csv': {e}")
+        st.error(f"❌ Ошибка при чтении CSV: {e}")
         return None
 
-# --- 4. Интерфейс ---
-st.title("Пиксель")
-st.caption("Умный поиск по базе Disney")
+# Инициализация интерфейса
+st.markdown("##### ✨ Умный ассистент Пиксель")
+st.markdown("Задайте вопрос о вселенной Disney, и я проанализирую данные.")
 
-user_query = st.text_input("Ваш запрос:", placeholder="Введите вопрос...")
-ask_button = st.button("Найти")
+# Поля ввода
+col1, col2 = st.columns([4, 1])
+with col1:
+    user_query = st.text_input(
+        label="Ваш вопрос",
+        placeholder="Например: В каких мультфильмах есть Микки Маус?",
+        key="user_input_box",
+        label_visibility="collapsed"
+    )
+with col2:
+    ask_button = st.button("Найти", use_container_width=True, key="find_answer")
 
-works_df = create_knowledge_base()
+# Загрузка базы
+knowledge_base_text = create_knowledge_base()
 answer_placeholder = st.empty()
 
-# --- 5. Логика ---
-if works_df is not None and GROQ_API_KEY:
-    try:
-        client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        model_name = "meta-llama/llama-3.3-70b-versatile" # Или другая доступная модель
-    except Exception as e:
-        st.error(f"Ошибка клиента: {e}")
-        client = None
+# 4. Логика обработки запроса
+if ask_button:
+    if not GROQ_API_KEY:
+        st.warning("⚠️ Не найден ключ API. Установите GROQ_API_KEY.")
+    elif not user_query:
+        st.warning("⚠️ Пожалуйста, введите вопрос!")
+    elif not knowledge_base_text:
+        st.error("⚠️ База знаний пуста.")
+    else:
+        try:
+            client = OpenAI(
+                base_url="https://api.groq.com/openai/v1",
+                api_key=GROQ_API_KEY
+            )
+            # Используем актуальную модель (Llama 3 70b или Mixtral обычно лучше справляются с русским)
+            model_name = "llama3-70b-8192" 
 
-    if client and user_query and ask_button:
-        with st.spinner("Анализ данных..."):
-            try:
-                # Собираем контекст из таблицы
-                context = ""
-                for _, work in works_df.iterrows():
-                    context += "---\n"
-                    context += f"Название: {work.get('Name')}\n"
-                    context += f"Тип: {work.get('Тип')} (Важно!)\n"
-                    context += f"Год: {work.get('Год выпуска')}\n"
-                    context += f"Рейтинг: {work.get('Рейтинг')}\n"
-                    context += f"Жанр: {work.get('Жанр')}\n"
-                    context += f"Описание: {work.get('Описание')}\n"
+            with st.spinner("🔮 Пиксель думает..."):
+                # 5. Промпт Инжиниринг
+                system_prompt = f"""
+Ты — умный ассистент "Пиксель" по базе данных Disney. 
 
-                # Промпт
-                prompt = f"""
-                Твоя роль - поисковый алгоритм по базе данных.
+ТВОИ ДАННЫЕ (Контекст):
+{knowledge_base_text}
+
+ИНСТРУКЦИИ:
+1. Отвечай ТОЛЬКО на основе предоставленных данных. Не выдумывай факты.
+2. СТРОГО различай "Фильмы" (Live-action) и "Мультфильмы" (Animation). Смотри на поле "Тип" или "Жанр".
+   - Если пользователь спрашивает про мультфильмы, не перечисляй кинофильмы.
+   - Если спрашивает про фильмы, не перечисляй анимацию.
+3. Если данных нет, отвечай: "К сожалению, эта информация не найдена в архиве."
+
+ФОРМАТ ОТВЕТА (Строго соблюдай теги):
+[РАССУЖДЕНИЕ]
+Здесь напиши свой ход мыслей: как ты искал информацию, как фильтровал по типу (мультфильм/фильм), какие записи нашел.
+[ОТВЕТ]
+Здесь напиши финальный ответ для пользователя в вежливой форме.
+"""
                 
-                ИНСТРУКЦИИ:
-                1. СТРОГО РАЗЛИЧАЙ: "Фильм" (живое кино) и "Мультфильм" (анимация).
-                   - Если просят фильмы -> исключи мультфильмы.
-                   - Если просят мультфильмы -> исключи фильмы.
-                2. Не придумывай данные. Используй только контекст.
+                messages = [
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_query}
+                ]
 
-                ФОРМАТ ВЫВОДА (Строго два блока):
-                
-                [РАССУЖДЕНИЯ]
-                Напиши технический отчет о поиске.
-                - Без жирного шрифта (без звездочек).
-                - Без эмодзи.
-                - Просто текст: какие записи проверил, какие подошли по году/рейтингу/типу, какие отсеял.
-                
-                [ОТВЕТ]
-                Финальный ответ для пользователя. Четкий список или текст.
-
-                КОНТЕКСТ ДАННЫХ:
-                {context}
-
-                ЗАПРОС: {user_query}
-                """
-
-                # Запрос к нейросети
                 response = client.chat.completions.create(
                     model=model_name,
-                    messages=[{"role": "user", "content": prompt}],
-                    temperature=0.1,
+                    messages=messages,
+                    temperature=0.1, # Низкая температура для точности
                     max_tokens=2000
                 )
-                full_text = response.choices[0].message.content
 
-                # Обработка ответа
-                try:
-                    parts = full_text.split("[ОТВЕТ]")
-                    reasoning = parts[0].replace("[РАССУЖДЕНИЯ]", "").strip()
-                    answer = parts[1].strip()
-                    
-                    # Убираем звездочки (markdown bold) из рассуждений, чтобы было чисто
-                    reasoning_clean = reasoning.replace("**", "").replace("*", "")
-                    
-                    # Преобразуем переносы строк в HTML
-                    reasoning_html = reasoning_clean.replace('\n', '<br>')
-                    answer_html = answer.replace('\n', '<br>')
-                    
-                except:
-                    # Если формат нарушен
-                    reasoning_html = "Ошибка формата ответа."
-                    answer_html = full_text
+                full_response = response.choices[0].message.content
 
-                # Вывод
-                st.markdown(f"""
-                <div class="reasoning-box">
-                    <span class="block-label">Логика поиска:</span>
-                    {reasoning_html}
-                </div>
+                # 6. Парсинг ответа (Рассуждение vs Ответ)
+                reasoning = ""
+                final_answer = full_response
+
+                if "[РАССУЖДЕНИЕ]" in full_response and "[ОТВЕТ]" in full_response:
+                    parts = full_response.split("[ОТВЕТ]")
+                    reasoning = parts[0].replace("[РАССУЖДЕНИЕ]", "").strip()
+                    final_answer = parts[1].strip()
                 
-                <div class="answer-box">
-                    <span class="block-label">Результат:</span>
-                    {answer_html}
-                </div>
-                """, unsafe_allow_html=True)
+                # Вывод рассуждений в скрытом блоке
+                if reasoning:
+                    with st.expander("🕵️ Показать ход мыслей (Анализ)"):
+                        st.write(reasoning)
 
-            except Exception as e:
-                st.error(f"Произошла ошибка: {e}")
+                # Вывод финального ответа
+                st.markdown(f'<div class="answer-box">{final_answer}</div>', unsafe_allow_html=True)
 
-    elif not user_query and ask_button:
-        st.warning("Введите запрос.")
-
-elif not works_df:
-    st.error("Файл 'ПроизведенияП.csv' не найден.")
-elif not GROQ_API_KEY:
-    st.error("API ключ не найден.")
+        except Exception as e:
+            st.markdown(f'<div class="error-box">❌ Произошла ошибка: {e}</div>', unsafe_allow_html=True)
