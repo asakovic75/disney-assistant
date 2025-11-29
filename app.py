@@ -6,81 +6,94 @@ import os
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
 css_styles = """
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
 
 body, .stApp {
     font-family: 'Nunito', sans-serif !important;
-    background: transparent;
+    background-color: #F8FAFC;
 }
 
 [data-testid="stHeader"] {
     background: transparent;
 }
 
-h1 { font-size: 1.5rem !important; text-align: left; }
-h3, h5 { font-size: 1.2rem !important; text-align: left; }
+h1, h2, h3 {
+    color: #1E293B;
+}
 
 [data-testid="stTextInput"] {
     background: #FFFFFF !important;
-    border-radius: 12px !important;
-    border: 1px solid #E5E7EB !important;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    border-radius: 15px !important;
+    border: 1px solid #E2E8F0 !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    padding: 2px;
 }
 
 [data-testid="stTextInput"] input {
-    background: transparent !important;
-    color: #111111 !important;
-    font-size: 0.9rem !important;
-    padding: 10px 15px !important;
-    border: none !important;
-    outline: none !important;
+    color: #0F172A !important;
+    font-size: 1rem !important;
 }
 
 .stButton button {
-    border-radius: 10px !important;
-    padding: 10px 20px !important;
-    font-size: 0.9rem !important;
+    border-radius: 12px !important;
+    padding: 12px 24px !important;
+    font-size: 1rem !important;
     font-weight: 700;
-    background: #3B82F6 !important;
+    background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%) !important;
     color: white !important;
     border: none !important;
+    box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s ease;
 }
 
-.reasoning-section {
-    background-color: #F3F4F6;
-    border-radius: 10px;
-    padding: 15px;
-    margin-bottom: 20px;
-    font-size: 0.9rem;
+.stButton button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px -1px rgba(37, 99, 235, 0.4);
+}
+
+.search-results-container {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #F1F5F9;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.movie-card {
     border-left: 4px solid #3B82F6;
+    background: #F8FAFC;
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 0 12px 12px 0;
 }
 
-.films-list {
-    margin-top: 10px;
-}
-
-.final-answer-section {
-    background-color: #EFF6FF;
-    border: 1px solid #BFDBFE;
-    border-radius: 10px;
-    padding: 20px;
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
     color: #1E3A8A;
+    margin-bottom: 8px;
+    display: block;
 }
 
-.error-message {
-    background-color: #FEF2F2;
-    color: #EF4444 !important;
-    padding: 1rem;
-    border-radius: 10px;
-    text-align: center;
+.final-answer-box {
+    background: linear-gradient(to right, #EFF6FF, #DBEAFE);
+    border: 1px solid #BFDBFE;
+    border-radius: 16px;
+    padding: 24px;
+    color: #1E3A8A;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    font-weight: 500;
 }
 
-.warning-message {
-    background-color: #FFFBEB;
-    color: #F59E0B !important;
-    padding: 1rem;
-    border-radius: 10px;
-    text-align: center;
+.section-header {
+    color: #64748B;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 12px;
+    font-weight: 700;
 }
 """
 st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
@@ -113,16 +126,16 @@ def create_knowledge_base():
         st.error(f"Ошибка при загрузке данных: {e}")
         return None
 
-st.markdown("##### ✨ Умный ассистент Пиксель")
+st.markdown("### ✨ Умный ассистент Пиксель")
 
 user_query = st.text_input(
     label=" ",
-    placeholder="Спросите о фильмах или мультфильмах Disney...",
+    placeholder="Например: Фильмы с рейтингом ниже 7.0...",
     key="user_input_box",
     label_visibility="collapsed"
 )
 
-ask_button = st.button("Найти", use_container_width=True, key="find_answer")
+ask_button = st.button("Найти ответ", use_container_width=True)
 
 knowledge_base_text = create_knowledge_base()
 answer_placeholder = st.empty()
@@ -138,45 +151,43 @@ if knowledge_base_text and GROQ_API_KEY:
     if client and user_query and ask_button:
         with st.spinner("✨ Пиксель ищет информацию..."):
             try:
-                prompt = f"""Ты - строгий аналитический ассистент Пиксель.
+                prompt = f"""Ты - Пиксель, умный ассистент по базе Disney.
 
-ИНСТРУКЦИЯ ПО ФИЛЬТРАЦИИ (ВЫПОЛНЯТЬ БУКВАЛЬНО):
+СТРОГИЕ ПРАВИЛА ФИЛЬТРАЦИИ:
 
-1. ЧИСЛОВАЯ ПРОВЕРКА (САМОЕ ВАЖНОЕ):
-   - Если просят "рейтинг ниже 7.0": Сравнивай числа. 7.3 > 7.0 -> ЗАПРЕЩЕНО. 7.0 == 7.0 -> ЗАПРЕЩЕНО. 6.9 < 7.0 -> РАЗРЕШЕНО.
-   - Если просят "после 2015 года": Сравнивай числа. 2015 == 2015 -> ЗАПРЕЩЕНО. 2014 < 2015 -> ЗАПРЕЩЕНО. 2016 > 2015 -> РАЗРЕШЕНО.
-   
-2. ТИП ПРОИЗВЕДЕНИЯ:
-   - "Фильм" -> искать строго `Тип: Фильм`.
-   - "Мультфильм" -> искать строго `Тип: Мультфильм`.
+1. ТИП ПРОИЗВЕДЕНИЯ (ГЛАВНОЕ ПРАВИЛО):
+   - Если пользователь пишет "Фильм" (кино): ИСКАТЬ ТОЛЬКО `Тип: Фильм`. ИГНОРИРОВАТЬ `Тип: Мультфильм`.
+   - Если пользователь пишет "Мультфильм" (анимация): ИСКАТЬ ТОЛЬКО `Тип: Мультфильм`. ИГНОРИРОВАТЬ `Тип: Фильм`.
+   - Если тип не указан, искать везде.
 
-3. ВЫВОД:
-   - В блоке [РАССУЖДЕНИЯ] показывай ТОЛЬКО те карточки, которые прошли проверку. Если фильм не подходит по году или рейтингу, не пиши о нем вообще.
-   - Не дублируй одинаковые фильмы.
+2. ЧИСЛОВАЯ ПРОВЕРКА:
+   - Сравнивай числа математически точно. 
+   - "Рейтинг ниже 7.0" -> 7.3 НЕ ПОДХОДИТ. 6.9 ПОДХОДИТ.
+   - "После 2015 года" -> 2015 НЕ ПОДХОДИТ. 2016 ПОДХОДИТ.
 
-ФОРМАТ ОТВЕТА (СТРОГО):
-РАССУЖДЕНИЯ
+ФОРМАТ ВЫВОДА:
+[РАССУЖДЕНИЯ]
 ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:
 
 🎬 [Название]
+🏷️ Тип: [Тип]
 🎭 Жанр: [жанр]
 📅 Год выпуска: [год]
 💰 Бюджет и сборы: [бюджет]
-🔞 Рейтинг/Возраст: [рейтинг]
+🔞 Рейтинг: [рейтинг]
 ⏱️ Продолжительность: [время]
 🏢 Студия: [студия]
 🏆 Награды: [награды]
 👥 Персонажи: [персонажи]
 🎵 Песни: [песни]
 🎡 Диснейленд: [связь с парком]
-🏷️ Тип: [Фильм/Мультфильм]
 
-(Повтори только для подходящих результатов)
+(Только подходящие записи)
 
-АНАЛИЗ: [краткий вывод]
+АНАЛИЗ: [кратко]
 
-ОТВЕТ
-[Здесь итоговый ответ. ЗАПРЕЩЕНО использовать звездочки **. Просто текст.]
+[ОТВЕТ]
+[Здесь только итоговый текст ответа. Без Markdown символов (** или __). Просто чистый текст.]
 
 ДАННЫЕ:
 {knowledge_base_text}
@@ -195,46 +206,49 @@ if knowledge_base_text and GROQ_API_KEY:
 
                 try:
                     if "[ОТВЕТ]" in answer:
-                        reasoning_part, final_answer_part = answer.split("ОТВЕТ")
+                        reasoning_part, final_answer_part = answer.split("[ОТВЕТ]")
                     else:
                         parts = answer.split("ОТВЕТ:")
                         if len(parts) > 1:
-                             reasoning_part = parts[0]
-                             final_answer_part = parts[1]
+                            reasoning_part = parts[0]
+                            final_answer_part = parts[1]
                         else:
-                             reasoning_part = answer
-                             final_answer_part = "Смотрите результаты выше."
+                            reasoning_part = answer
+                            final_answer_part = "Смотрите результаты выше."
 
-                    reasoning_text = reasoning_part.replace("РАССУЖДЕНИЯ", "").strip()
-                    # Принудительная очистка от звездочек в ответе
+                    reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
                     final_answer_text = final_answer_part.replace("**", "").replace("*", "").strip()
-                    
+
                     reasoning_html = reasoning_text.replace('\n', '<br>')
-                    final_answer_html = final_answer_text.replace('\n', '<br>')
+                    reasoning_html = reasoning_html.replace('ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:', '')
                     
-                    reasoning_html = reasoning_html.replace('🎬', '<span style="font-size: 1.2em;">🎬</span>')
+                    reasoning_html = reasoning_html.replace('🎬', '</div><div class="movie-card"><span class="card-title">🎬')
+                    
+                    if reasoning_html.startswith('</div>'):
+                        reasoning_html = reasoning_html[6:]
+                    
+                    if '<div class="movie-card">' in reasoning_html:
+                        reasoning_html += '</div>'
+
+                    final_answer_html = final_answer_text.replace('\n', '<br>')
 
                     full_response_html = f"""
-                    <div class='reasoning-section'>
-                        <h4 style='margin-top:0; color:#4B5563;'>🔍 Найденные карточки:</h4>
-                        <div class='films-list'>
-                            {reasoning_html}
-                        </div>
+                    <div class='search-results-container'>
+                        <div class='section-header'>🔍 АНАЛИЗ БАЗЫ ДАННЫХ</div>
+                        {reasoning_html}
                     </div>
-                    <div class='final-answer-section'>
-                        <h4 style='margin-top:0;'>🤖 Ответ Пикселя:</h4>
+                    <div class='final-answer-box'>
+                        <div class='section-header' style='color: #1E3A8A;'>🤖 ОТВЕТ ПИКСЕЛЯ</div>
                         {final_answer_html}
                     </div>
                     """
-                except ValueError:
-                    full_response_html = answer.replace("\n", "<br>")
+                except Exception:
+                    full_response_html = f"<div class='final-answer-box'>{answer}</div>"
 
                 answer_placeholder.markdown(full_response_html, unsafe_allow_html=True)
 
             except Exception as e:
-                answer_placeholder.markdown(f'<div class="error-message">❌ Ошибка: {e}</div>', unsafe_allow_html=True)
-                
+                answer_placeholder.error(f"Произошла ошибка: {e}")
+
     elif not user_query and ask_button:
-        answer_placeholder.markdown('<div class="warning-message">⚠️ Пожалуйста, введите вопрос!</div>', unsafe_allow_html=True)
-
-
+        answer_placeholder.warning("Пожалуйста, введите вопрос!")
