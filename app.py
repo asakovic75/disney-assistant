@@ -125,7 +125,7 @@ st.markdown("##### ✨ Умный ассистент Пиксель")
 
 user_query = st.text_input(
     label=" ",
-    placeholder="Спросите о фильмах или мультфильмах Disney (например: 'Фильмы 2010 года')...",
+    placeholder="Спросите о фильмах или мультфильмах Disney",
     key="user_input_box",
     label_visibility="collapsed"
 )
@@ -240,3 +240,4 @@ if knowledge_base_text and GROQ_API_KEY:
                 
     elif not user_query and ask_button:
         answer_placeholder.markdown('<div class="warning-message">⚠️ Пожалуйста, введите вопрос!</div>', unsafe_allow_html=True)
+
