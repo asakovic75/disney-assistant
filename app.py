@@ -101,7 +101,7 @@ knowledge_base_text = create_knowledge_base()
 if knowledge_base_text and GROQ_API_KEY:
     try:
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        model_name = "llama-3.3-70b-versatile"
+        model_name = "llama-3.1-8b-instant"
     except Exception as e:
         st.error(f"Ошибка клиента: {e}")
         client = None
@@ -191,3 +191,4 @@ if knowledge_base_text and GROQ_API_KEY:
 
 elif not GROQ_API_KEY:
     st.warning("Требуется GROQ_API_KEY.")
+
