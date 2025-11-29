@@ -3,7 +3,6 @@ import pandas as pd
 from openai import OpenAI
 import os
 
-# --- НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
 css_styles = """
@@ -59,11 +58,9 @@ st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# --- ЗАГРУЗКА ДАННЫХ ---
 @st.cache_data
 def create_knowledge_base():
     try:
-        # Убедитесь, что файл ПроизведенияП.csv существует
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
         knowledge_base = ""
         for _, work in works_df.iterrows():
@@ -105,7 +102,6 @@ knowledge_base_text = create_knowledge_base()
 if knowledge_base_text and GROQ_API_KEY:
     try:
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        # ИСПОЛЬЗУЕМ АКТУАЛЬНУЮ МОДЕЛЬ GROQ
         model_name = "llama-3.3-70b-versatile" 
     except Exception as e:
         st.error(f"Ошибка клиента: {e}")
@@ -114,7 +110,6 @@ if knowledge_base_text and GROQ_API_KEY:
     if client and user_query and ask_button:
         with st.spinner("Пиксель ищет ответ..."):
             try:
-                # --- ОБНОВЛЕННЫЙ ПРОМПТ ---
                 prompt = f"""
                 Ты - умный поисковый ассистент по базе данных фильмов.
                 
@@ -158,18 +153,16 @@ if knowledge_base_text and GROQ_API_KEY:
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": f"Запрос пользователя: {user_query}"}
                     ],
-                    temperature=0.1, # Низкая температура для точности
+                    temperature=0.1,
                     max_tokens=2000
                 )
                 
                 full_text = response.choices[0].message.content
-                
-                # --- УЛУЧШЕННЫЙ ПАРСИНГ ---
+
                 reasoning = "Логика не предоставлена"
                 answer_html = ""
                 summary = ""
-
-                # Пытаемся разбить текст более безопасно
+                
                 if "[РАССУЖДЕНИЯ]" in full_text and "[ОТВЕТ]" in full_text:
                     parts = full_text.split("[ОТВЕТ]")
                     reasoning_part = parts[0].split("[РАССУЖДЕНИЯ]")
@@ -184,10 +177,8 @@ if knowledge_base_text and GROQ_API_KEY:
                     else:
                         answer_html = rest.strip()
                 else:
-                    # Если модель сбилась и не выдала теги, показываем всё как есть
                     answer_html = full_text.replace("[РАССУЖДЕНИЯ]", "").replace("[ИТОГ]", "")
 
-                # Вывод
                 with st.expander("🕵️ Посмотреть логику отбора (Рассуждения)", expanded=False):
                     st.markdown(f'<div class="reasoning-box">{reasoning}</div>', unsafe_allow_html=True)
                 
