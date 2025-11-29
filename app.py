@@ -6,7 +6,7 @@ import os
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
 css_styles = """
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 
 body, .stApp {
     font-family: 'Nunito', sans-serif !important;
@@ -17,7 +17,8 @@ body, .stApp {
     background: transparent;
 }
 
-h4 { margin-top: 0 !important; }
+h1 { font-size: 1.5rem !important; text-align: left; }
+h3, h5 { font-size: 1.2rem !important; text-align: left; }
 
 [data-testid="stTextInput"] {
     background: #FFFFFF !important;
@@ -46,30 +47,17 @@ h4 { margin-top: 0 !important; }
 }
 
 .reasoning-section {
-    background-color: #F9FAFB;
-    border: 1px solid #E5E7EB;
+    background-color: #F3F4F6;
     border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 25px;
+    padding: 15px;
+    margin-bottom: 20px;
     font-size: 0.95rem;
+    border-left: 5px solid #3B82F6;
     color: #374151;
 }
 
-.card {
-    background: #FFFFFF;
-    border-left: 4px solid #3B82F6;
-    padding: 15px;
-    margin-bottom: 15px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    border-radius: 0 8px 8px 0;
-}
-
-.card-title {
-    font-size: 1.2em;
-    font-weight: 700;
-    color: #111827;
-    margin-bottom: 8px;
-    display: block;
+.films-list {
+    margin-top: 10px;
 }
 
 .final-answer-section {
@@ -78,8 +66,7 @@ h4 { margin-top: 0 !important; }
     border-radius: 10px;
     padding: 20px;
     color: #1E3A8A;
-    font-size: 1.05rem;
-    line-height: 1.6;
+    font-weight: 500;
 }
 
 .error-message {
@@ -110,19 +97,19 @@ def create_knowledge_base():
         for _, work in works_df.iterrows():
             knowledge_base += "-----\n"
             knowledge_base += f"Название: {work['Name']}\n"
-            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
-            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
+            knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы', 'не указано')}\n"
             knowledge_base += f"Возраст: {work.get('Возраст', 'не указано')}\n"
             knowledge_base += f"Год выпуска: {work.get('Год выпуска', 'не указано')}\n"
-            knowledge_base += f"Продолжительность: {work.get('Продолжительность', 'не указано')}\n"
-            knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
-            knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы', 'не указано')}\n"
+            knowledge_base += f"Диснейленд: {work.get('Диснейленд', 'не указано')}\n" 
+            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
+            knowledge_base += f"Исполнители: {work.get('Исполнители', 'не указано')}\n"
             knowledge_base += f"Награды: {work.get('Награды', 'не указано')}\n"
             knowledge_base += f"Персонажи: {work.get('Персонажи', 'не указано')}\n"
-            knowledge_base += f"Исполнители: {work.get('Исполнители', 'не указано')}\n"
-            knowledge_base += f"Диснейленд: {work.get('Диснейленд', 'не указано')}\n"
-            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
             knowledge_base += f"Песни: {work.get('Песни', 'не указано')}\n"
+            knowledge_base += f"Продолжительность: {work.get('Продолжительность', 'не указано')}\n"
+            knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
+            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
+            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
         return knowledge_base
     except Exception as e:
         st.error(f"Ошибка при загрузке данных: {e}")
@@ -145,7 +132,7 @@ answer_placeholder = st.empty()
 if knowledge_base_text and GROQ_API_KEY:
     try:
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        model_name = "meta-llama/llama-4-scout-17b-16e-instruct"
+        model_name = "meta-llama/llama-4-scout-17b-16e-instruct" 
     except Exception as e:
         st.error(f"Ошибка инициализации клиента: {e}")
         client = None
@@ -153,43 +140,42 @@ if knowledge_base_text and GROQ_API_KEY:
     if client and user_query and ask_button:
         with st.spinner("✨ Пиксель ищет информацию..."):
             try:
-                prompt = f"""Ты - умный ассистент Пиксель. Твоя цель - найти точную информацию в базе данных Disney.
+                prompt = f"""Твоя роль - быть умным ассистентом Пикселем.
 
-ПРАВИЛА ЛОГИКИ (СТРОГО):
-1.  **Фильтр "Тип":** 
-    - Если спрашивают "фильм", ищи только `Тип: Фильм`.
-    - Если спрашивают "мультфильм", ищи только `Тип: Мультфильм`.
-2.  **Фильтр "Числа":**
-    - "Рейтинг ниже 7.0" -> 7.0 включаем, 7.3 исключаем.
-    - "После 2015 года" -> 2016, 2017... (2015 не включаем, если не сказано "с 2015").
-3.  **Точность:** В блок [РАССУЖДЕНИЯ] включай ТОЛЬКО те карточки, которые на 100% соответствуют условиям. Если фильм "почти подходит", НЕ показывай его.
+ПРАВИЛА ЛОГИКИ (ОЧЕНЬ СТРОГО):
+1.  **МАТЕМАТИКА:**
+    - "Рейтинг ниже 7.0": это значит СТРОГО МЕНЬШЕ (<) 7.0. Рейтинг 7.3 НЕ подходит. Рейтинг 7.0 НЕ подходит. Рейтинг 6.8 подходит.
+    - "После 2015 года": это значит > 2015 (2016, 2017...).
+2.  **ФИЛЬТР ТИПА:**
+    - Если вопрос про "фильмы", игнорируй "Тип: Мультфильм".
+    - Если вопрос про "мультфильмы", игнорируй "Тип: Фильм".
+3.  **ЧИСТОТА ВЫВОДА:**
+    - В блоке [РАССУЖДЕНИЯ] показывай ТОЛЬКО те карточки, которые прошли проверку математикой. Если фильм не подходит, НЕ показывай его.
+    - Разделяй Рейтинг и Возраст на отдельные строки.
 
 ФОРМАТ ОТВЕТА:
-
 [РАССУЖДЕНИЯ]
-ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:
-
-🎬 Название: [Название]
+🎬 [Название]
 🏷️ Тип: [Фильм/Мультфильм]
 🎭 Жанр: [Жанр]
 🔞 Возраст: [Возраст]
+⭐ Рейтинг: [Рейтинг]
 📅 Год выпуска: [Год]
 ⏱️ Продолжительность: [Время]
-⭐ Рейтинг: [Рейтинг]
-💰 Бюджет и сборы: [Деньги]
+💰 Бюджет и сборы: [Бюджет]
 🏆 Награды: [Награды]
 👥 Персонажи: [Персонажи]
-🎥 Исполнители: [Актеры]
+🎥 Исполнители: [Исполнители]
 🎡 Диснейленд: [Парк]
 🏢 Студия: [Студия]
 🎵 Песни: [Песни]
 
-(Повторить для каждого найденного результата)
+(Повтори блок для каждого подходящего фильма)
 
-АНАЛИЗ: [Краткий вывод]
+АНАЛИЗ: [Краткий итог]
 
 [ОТВЕТ]
-[Здесь напиши итоговый ответ. НЕ используй Markdown символы вроде ** или __. Если нужно выделить текст, просто пиши его. Если список - делай каждый пункт с новой строки.]
+[Здесь напиши итоговый список. НЕ используй символы ** или []. Просто текст.]
 
 ДАННЫЕ:
 {knowledge_base_text}
@@ -210,30 +196,28 @@ if knowledge_base_text and GROQ_API_KEY:
                         reasoning_part, final_answer_part = answer.split("[ОТВЕТ]")
                     else:
                         reasoning_part = answer
-                        final_answer_part = "Подробности выше."
+                        final_answer_part = "Смотрите детали выше."
 
                     reasoning_text = reasoning_part.replace("[РАССУЖДЕНИЯ]", "").strip()
-                    final_answer_text = final_answer_part.strip()
+                    reasoning_text = reasoning_text.replace("ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:", "").strip()
+                    reasoning_text = reasoning_text.replace("[ПОИСКОВЫЕ РЕЗУЛЬТАТЫ]", "").strip()
                     
-                    reasoning_html = reasoning_text.replace('\n', '<br>')
-                    
-                    reasoning_html = reasoning_html.replace('🎬 Название:', '</div><div class="card"><span class="card-title">🎬')
-                    reasoning_html = reasoning_html.replace('ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:<br><br></div>', 'ПОИСКОВЫЕ РЕЗУЛЬТАТЫ:') 
-                    
-                    if '<div class="card">' not in reasoning_html and '🎬' in reasoning_html:
-                         reasoning_html = reasoning_html.replace('🎬', '<div class="card"><span class="card-title">🎬')
+                    final_answer_text = final_answer_part.strip().replace("**", "").replace("[", "").replace("]", "")
 
+                    reasoning_html = reasoning_text.replace('\n', '<br>')
                     final_answer_html = final_answer_text.replace('\n', '<br>')
-                    final_answer_html = final_answer_html.replace('**', '').replace('__', '') 
                     
+                    reasoning_html = reasoning_html.replace('🎬', '<br><span style="font-size: 1.3em;">🎬</span>')
+
                     full_response_html = f"""
                     <div class='reasoning-section'>
-                        <h4 style='color:#4B5563;'>🔍 Результаты поиска:</h4>
-                        {reasoning_html}
+                        <h4 style='margin-top:0; color:#4B5563;'>🔍 Найденные карточки:</h4>
+                        <div class='films-list'>
+                            {reasoning_html}
                         </div>
                     </div>
                     <div class='final-answer-section'>
-                        <h4 style='color:#1E3A8A;'>🤖 Ответ:</h4>
+                        <h4 style='margin-top:0;'>🤖 Ответ Пикселя:</h4>
                         <b>{final_answer_html}</b>
                     </div>
                     """
