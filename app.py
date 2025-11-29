@@ -3,19 +3,15 @@ import pandas as pd
 from openai import OpenAI
 import os
 
-# --- НАСТРОЙКИ СТРАНИЦЫ ---
 st.set_page_config(page_title="Пиксель", page_icon="✨", layout="wide")
 
-# --- CSS СТИЛИ (ДИЗАЙН) ---
 css_styles = """
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
 body, .stApp { font-family: 'Nunito', sans-serif !important; color: #333; }
 
-/* Заголовки */
 h1 { color: #0e1117; font-size: 2rem !important; }
 h3 { color: #1f77b4; font-size: 1.4rem !important; margin-top: 25px; border-bottom: 2px solid #eee; padding-bottom: 10px; }
 
-/* Поля ввода и кнопки */
 .stTextInput input { border-radius: 12px; border: 1px solid #ddd; padding: 12px; }
 .stButton button { 
     border-radius: 12px; 
@@ -27,7 +23,6 @@ h3 { color: #1f77b4; font-size: 1.4rem !important; margin-top: 25px; border-bott
 }
 .stButton button:hover { background-color: #0056b3; }
 
-/* Карточки ответов */
 .answer-card {
     background-color: #ffffff;
     border: 1px solid #e1e4e8;
@@ -38,7 +33,6 @@ h3 { color: #1f77b4; font-size: 1.4rem !important; margin-top: 25px; border-bott
 }
 .answer-card:hover { transform: translateY(-2px); box-shadow: 0 6px 15px rgba(0,0,0,0.1); transition: 0.3s; }
 
-/* Блок рассуждений */
 .reasoning-box {
     background-color: #fff3cd;
     border-left: 5px solid #ffc107;
@@ -49,7 +43,6 @@ h3 { color: #1f77b4; font-size: 1.4rem !important; margin-top: 25px; border-bott
     border-radius: 4px;
 }
 
-/* Блок итогового списка */
 .summary-box {
     background-color: #d4edda;
     border: 1px solid #c3e6cb;
@@ -64,31 +57,32 @@ st.markdown(f"<style>{css_styles}</style>", unsafe_allow_html=True)
 
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
-# --- ЗАГРУЗКА ДАННЫХ ---
 @st.cache_data
 def create_knowledge_base():
     try:
-        # Читаем CSV
         works_df = pd.read_csv("ПроизведенияП.csv").astype(str).fillna('не указано')
         knowledge_base = ""
         for _, work in works_df.iterrows():
             knowledge_base += "-----\n"
-            # Собираем данные в текстовый блок для промпта
             knowledge_base += f"Название: {work['Name']}\n"
-            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
-            knowledge_base += f"Год: {work.get('Год выпуска', '0')}\n"
-            knowledge_base += f"Рейтинг: {work.get('Рейтинг', '0')}\n"
-            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
-            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
-            knowledge_base += f"Бюджет: {work.get('Бюджет и сборы','не указано')}\n"
+            knowledge_base += f"Бюджет и сборы: {work.get('Бюджет и сборы','не указано')}\n"
             knowledge_base += f"Возраст: {work.get('Возраст', 'не указано')}\n"
-            knowledge_base += f"Описание: {work.get('Описание', 'не указано')}\n"
+            knowledge_base += f"Год выпуска: {work.get('Год выпуска','не указано')}\n"
+            knowledge_base += f"Диснейленд: {work.get('Диснейленд','не указано')}\n"
+            knowledge_base += f"Жанр: {work.get('Жанр', 'не указано')}\n"
+            knowledge_base += f"Исполнители: {work.get('Исполнители','не указано')}\n"
+            knowledge_base += f"Награды: {work.get('Награды', 'не указано')}\n"
+            knowledge_base += f"Персонажи: {work.get('Персонажи', 'не указано')}\n"
+            knowledge_base += f"Песни: {work.get('Песни', 'не указано')}\n"
+            knowledge_base += f"Продолжительность: {work.get('Продолжительность', 'не указано')}\n"
+            knowledge_base += f"Рейтинг: {work.get('Рейтинг', 'не указано')}\n"
+            knowledge_base += f"Студия: {work.get('Студия', 'не указано')}\n"
+            knowledge_base += f"Тип: {work.get('Тип', 'не указано')}\n"
         return knowledge_base
     except Exception as e:
         st.error(f"Ошибка при загрузке данных: {e}")
         return None
 
-# --- UI ---
 st.markdown("<h1>✨ Умный ассистент Пиксель</h1>", unsafe_allow_html=True)
 
 col1, col2 = st.columns([5, 1])
@@ -104,11 +98,10 @@ with col2:
 
 knowledge_base_text = create_knowledge_base()
 
-# --- ЛОГИКА ЗАПРОСА ---
 if knowledge_base_text and GROQ_API_KEY:
     try:
         client = OpenAI(base_url="https://api.groq.com/openai/v1", api_key=GROQ_API_KEY)
-        model_name = "llama-3.3-70b-versatile" # Используем мощную модель
+        model_name = "llama-3.3-70b-versatile"
     except Exception as e:
         st.error(f"Ошибка клиента: {e}")
         client = None
@@ -116,7 +109,6 @@ if knowledge_base_text and GROQ_API_KEY:
     if client and user_query and ask_button:
         with st.spinner("Пиксель выполняет строгую фильтрацию..."):
             try:
-                # --- СТРОГИЙ ПРОМПТ ---
                 prompt = f"""
                 Ты - строгий SQL-аналитик данных Disney.
                 
@@ -124,7 +116,7 @@ if knowledge_base_text and GROQ_API_KEY:
                 
                 АЛГОРИТМ РАБОТЫ (СТРОГО):
                 1. Прочитай запрос пользователя. Выдели условия фильтрации.
-                   - Если сказано "после 2015", значит Год > 2015 (2015 НЕ ВКЛЮЧАТЬ).
+                   - Если сказано "после 2015", значит Год выпуска > 2015 (2015 НЕ ВКЛЮЧАТЬ).
                    - Если сказано "ниже 7.0", значит Рейтинг < 7.0 (7.0, 7.1 и 7.3 НЕ ВКЛЮЧАТЬ).
                    - Если сказано "Фильмы", значит Тип должен быть строго "Фильм" (Игнорируй "Мультфильм", "Анимация").
                 
@@ -133,7 +125,7 @@ if knowledge_base_text and GROQ_API_KEY:
                    - Пример проверки: "Дамбо": Рейтинг 6.3. Условие < 7.0. Результат: ПРИНЯТЬ.
                 
                 3. Формат вывода:
-                   В блоке [РАССУЖДЕНИЯ]: Перечисли, какие фильмы ты проверил и почему отклонил (например: "Круэлла (7.3 >= 7.0) -> Отклонен").
+                   В блоке [РАССУЖДЕНИЯ]: Перечисли, какие произведения ты проверил и почему отклонил.
                    В блоке [ОТВЕТ]: Выведи ТОЛЬКО те карточки, которые прошли проверку.
                    В блоке [ИТОГ]: Список названий прошедших проверку.
 
@@ -141,8 +133,8 @@ if knowledge_base_text and GROQ_API_KEY:
                 Используй HTML:
                 <div class="answer-card">
                     <b>Название</b><br>
-                    <i>Год: ... | Рейтинг: ...</i><br>
-                    ...
+                    <i>Год выпуска: ... | Рейтинг: ... | Жанр: ...</i><br>
+                    Описание других полей при наличии...
                 </div>
                 
                 Если пользователь просил только Фильмы, НЕ создавай заголовок "Мультфильмы".
@@ -158,18 +150,16 @@ if knowledge_base_text and GROQ_API_KEY:
                         {"role": "system", "content": prompt},
                         {"role": "user", "content": f"Запрос: {user_query}"}
                     ],
-                    temperature=0.0, # НОЛЬ - чтобы модель не фантазировала
+                    temperature=0.0,
                     max_tokens=3000
                 )
                 
                 full_text = response.choices[0].message.content
                 
-                # --- РАЗБОР ОТВЕТА ---
                 reasoning = ""
                 answer_html = ""
                 summary = ""
 
-                # Пытаемся разбить текст по тегам
                 if "[РАССУЖДЕНИЯ]" in full_text:
                     parts = full_text.split("[ОТВЕТ]")
                     reasoning = parts[0].replace("[РАССУЖДЕНИЯ]", "").strip()
@@ -182,10 +172,8 @@ if knowledge_base_text and GROQ_API_KEY:
                         else:
                             answer_html = rest.strip()
                 else:
-                    # Если модель забыла теги, выводим как есть
                     answer_html = full_text
 
-                # --- ВЫВОД НА ЭКРАН ---
                 with st.expander("🕵️ Посмотреть логику отбора (Рассуждения)", expanded=False):
                     st.markdown(f'<div class="reasoning-box">{reasoning.replace(chr(10), "<br>")}</div>', unsafe_allow_html=True)
                 
