@@ -191,3 +191,4 @@ if knowledge_base_text and GROQ_API_KEY:
 
 elif not GROQ_API_KEY:
     st.warning("Требуется GROQ_API_KEY.")
+
